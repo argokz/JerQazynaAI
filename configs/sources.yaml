@@ -83,7 +83,7 @@ sources:
         filename: EMAG2_V3_SeaLevel_DataTiff.tif
       - url: "https://www.ngdc.noaa.gov/geomag/data/EMAG2/EMAG2_V3_Error_DataTiff.tif"
         filename: EMAG2_V3_Error_DataTiff.tif
-    notes: "Глобальные GeoTIFF, nodata = 99999; обрезка по aoi на этапе подготовки."
+    notes: "Глобальные GeoTIFF 2' без CRS в файле: при подготовке назначить EPSG:4326; nodata = 99999."
 
   - id: wgm2012
     title: "WGM2012: аномалии Буге (BGI)"
