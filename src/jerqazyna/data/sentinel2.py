@@ -67,6 +67,7 @@ def composite_tile(spec: StacSpec, bbox: BBox, dest: Path) -> int:
         groupby="solar_day",
         resampling={"scl": "nearest", "*": "average"},
         chunks={"x": 1024, "y": 1024},
+        fail_on_error=False,  # битая сцена на S3 пропускается, а не роняет весь тайл
     )
     clear = ds["scl"].isin(CLEAR_SCL)
     composite = ds[bands].where(clear).median(dim="time", skipna=True)

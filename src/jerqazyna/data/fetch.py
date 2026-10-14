@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -122,8 +123,21 @@ def fetch_source(
         lock = threading.Lock()
 
         def run(lat: int, lon: int, dest: Path) -> None:
-            n = composite_tile(src.stac, tile_bbox(lat, lon), dest)
+            n, error = 0, None
+            for attempt in range(1, 4):
+                try:
+                    n = composite_tile(src.stac, tile_bbox(lat, lon), dest)
+                    error = None
+                    break
+                except (OSError, RuntimeError, ValueError) as e:  # сеть, S3, GDAL
+                    error = e
+                    time.sleep(10 * attempt)
             with lock:
+                if error is not None:
+                    report.missing.append(dest.name)
+                    print(f"  {dest.name}: не удалось после 3 попыток ({error}); "
+                          "повторный запуск дособерёт", flush=True)
+                    return
                 if n:
                     report.downloaded.append(dest)
                     manifest.record(src.id, dest, f"{src.stac.endpoint}#{src.stac.collection}")
