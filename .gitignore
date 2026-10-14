@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Данные и артефакты: в git не храним, версии ведём через манифест / DVC
+data/*
+!data/README.md
+!data/manifest.csv
+mlruns/
+mlartifacts/
+outputs/
+*.tif
+*.tiff
+*.nc
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+
+# Окружение
+.env
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

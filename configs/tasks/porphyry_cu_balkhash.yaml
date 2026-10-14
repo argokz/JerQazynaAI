@@ -1,0 +1,48 @@
+# Задача 1: порфировая медь, слепой регион — Прибалхашье (Балхаш-Илийская дуга).
+task_id: porphyry_cu_balkhash
+deposit_type: porphyry_cu
+seed: 42
+
+grid:
+  # Альберс для Центральной Азии: доля ячеек = доля площади.
+  crs: "+proj=aea +lat_0=45 +lat_1=40 +lat_2=52 +lon_0=70 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+  cell_size_m: 1000
+
+# Весь Центрально-Азиатский пояс (KZ, UZ, KG), чтобы было больше положительных примеров.
+training_area: data/raw/regions/caob_training_area.geojson
+
+labels:
+  source: data/raw/usgs/porphyry_cu_global_2025.gpkg
+  include_prospects: true
+  mine_mask_buffer_m: 3000   # маска карьеров и отвалов для спектральных признаков
+
+layers:
+  - {name: aster_alteration, group: spectral,   source: data/raw/usgs/sir2010_5090n/aster_alteration}
+  - {name: sentinel2,        group: spectral,   source: data/raw/sentinel2}
+  - {name: dem,              group: terrain,    source: data/raw/copernicus_dem}
+  - {name: emag2,            group: geophysics, source: data/raw/emag2}
+  - {name: wgm2012_bouguer,  group: geophysics, source: data/raw/wgm2012}
+  - {name: geology_fsu,      group: geology,    source: data/raw/usgs/fsu_geology}
+  - {name: faults_fsu,       group: geology,    source: data/raw/usgs/fsu_faults}
+  # Зоны USGS 2010 строились с учётом известных объектов: только эталон, не признак.
+  - {name: usgs_2010_tracts, group: geology,    source: data/raw/usgs/sir2010_5090n/tracts, benchmark_only: true}
+
+model:
+  kind: random_forest
+  params:
+    n_estimators: 500
+    min_samples_leaf: 5
+    class_weight: balanced
+
+validation:
+  blind_region:
+    name: Прибалхашье
+    geometry: configs/regions/balkhash_blind.geojson   # зафиксировать до первого обучения
+    buffer_m: 20000
+  spatial_block_size_m: 50000
+  area_fractions: [0.05, 0.10, 0.20]
+  bootstrap_iterations: 2000
+  confidence: 0.95
+  success_area_fraction: 0.20
+  success_capture_lower_bound: 0.70   # предварительно, уточнить с геологом
+  temporal_test: false                # нет подтверждённого списка открытий после 2010 года
