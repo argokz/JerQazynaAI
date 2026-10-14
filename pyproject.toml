@@ -22,6 +22,9 @@ geo = [
     "shapely>=2.0",
     "pyproj>=3.6",
     "xarray>=2023.1",
+    "pystac-client>=0.7",
+    "odc-stac>=0.3.9",
+    "dask>=2023.1",
 ]
 ml = [
     "scikit-learn>=1.3",

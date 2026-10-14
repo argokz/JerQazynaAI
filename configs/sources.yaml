@@ -1,0 +1,180 @@
+# Каталог открытых источников данных.
+# access:
+#   direct        — прямые HTTP-ссылки, скачиваются автоматически
+#   tiles         — тайлы по сетке 1°×1° внутри aoi (Copernicus DEM на AWS)
+#   geoboundaries — границы стран через API geoBoundaries
+#   stac          — композит Sentinel-2 L2A из Earth Search (AWS), без авторизации
+#   manual        — сайт закрыт защитой от ботов или формой: скачать в браузере в указанную папку
+#   request       — нужен запрос в организацию
+# Ссылки проверены 2026-10-14.
+
+# Область обучения: казахстанская часть Центрально-Азиатского пояса + Узбекистан, Кыргызстан, Таджикистан.
+aoi:
+  name: caob
+  bbox: [55.0, 37.0, 88.0, 55.5]   # lon_min, lat_min, lon_max, lat_max (WGS84)
+  # Тайлы DEM и Sentinel-2 берутся только над этими странами (нужен скачанный geoboundaries).
+  countries: [KAZ, UZB, KGZ, TJK]
+
+# Слепой регион (Прибалхашье) скачивается первым, чтобы раньше проверить конвейер.
+priority_bbox: [72.0, 44.5, 80.0, 48.5]
+
+sources:
+  - id: usgs_sir2010_5090n
+    title: "USGS SIR 2010-5090-N: оценка порфировой меди Западной Центральной Азии (ГИС-пакет)"
+    roles: [labels, benchmark, spectral]
+    access: direct
+    license: "Public domain (USGS)"
+    citation: "Berger et al., 2014, USGS SIR 2010-5090-N, https://doi.org/10.3133/sir20105090N"
+    size_mb: 152
+    files:
+      - url: "https://pubs.usgs.gov/sir/2010/5090/n/SIR%202010-5090-N%20GIS.zip"
+        filename: sir2010_5090n_gis.zip
+        unzip: true
+      - url: "https://pubs.usgs.gov/sir/2010/5090/n/SIR2010-5090-N_Table%202.1.xlsx"
+        filename: sir2010_5090n_table_2_1.xlsx
+    notes: "Известные объекты, перспективные зоны (только эталон!), карты изменений по ASTER."
+
+  - id: usgs_porphyry_2025
+    title: "USGS: глобальная база порфировых месторождений и проспектов (2025)"
+    roles: [labels]
+    access: manual
+    license: "Public domain (USGS)"
+    citation: "Magnin, Graham, Huston, Eglington, 2025, https://doi.org/10.5066/P14CCESQ"
+    page: "https://doi.org/10.5066/P14CCESQ"
+    expect: ["*.xlsx", "*.csv"]
+    notes: "ScienceBase закрыт проверкой Cloudflare: открыть DOI в браузере, скачать таблицу в папку источника."
+
+  - id: usgs_mrds
+    title: "USGS Mineral Resources Data System (MRDS)"
+    roles: [labels, exploration_bias]
+    access: direct
+    license: "Public domain (USGS)"
+    citation: "USGS, Mineral Resources Data System, https://mrdata.usgs.gov/mrds/"
+    size_mb: 26
+    files:
+      - url: "https://mrdata.usgs.gov/mrds/mrds-csv.zip"
+        filename: mrds-csv.zip
+        unzip: true
+    notes: "Рудопроявления всех типов: дополнительные метки и прокси изученности территории."
+
+  - id: mining_polygons_v2
+    title: "Global-scale mining polygons v2 (Maus et al., 2022)"
+    roles: [mine_mask]
+    access: direct
+    license: "CC BY-SA 4.0"
+    citation: "Maus et al., 2022, https://doi.org/10.1594/PANGAEA.942325"
+    size_mb: 25
+    files:
+      - url: "https://download.pangaea.de/dataset/942325/files/global_mining_polygons_v2.gpkg"
+        filename: global_mining_polygons_v2.gpkg
+    notes: "Карьеры, отвалы, хвостохранилища: маска против утечки через техногенные следы."
+
+  - id: emag2v3
+    title: "EMAG2v3: магнитные аномалии, сетка 2'"
+    roles: [geophysics]
+    access: direct
+    license: "Public domain (NOAA)"
+    citation: "Meyer, Saltus, Chulliat, 2017, https://doi.org/10.7289/V5H70CVX"
+    size_mb: 330
+    files:
+      - url: "https://www.ngdc.noaa.gov/geomag/data/EMAG2/EMAG2_V3_UpCont_DataTiff.tif"
+        filename: EMAG2_V3_UpCont_DataTiff.tif
+      - url: "https://www.ngdc.noaa.gov/geomag/data/EMAG2/EMAG2_V3_SeaLevel_DataTiff.tif"
+        filename: EMAG2_V3_SeaLevel_DataTiff.tif
+      - url: "https://www.ngdc.noaa.gov/geomag/data/EMAG2/EMAG2_V3_Error_DataTiff.tif"
+        filename: EMAG2_V3_Error_DataTiff.tif
+    notes: "Глобальные GeoTIFF, nodata = 99999; обрезка по aoi на этапе подготовки."
+
+  - id: wgm2012
+    title: "WGM2012: аномалии Буге (BGI)"
+    roles: [geophysics]
+    access: manual
+    license: "© BGI/CGMW, проверить условия на странице"
+    citation: "Bonvalot et al., 2012, https://doi.org/10.18168/bgi.23"
+    page: "https://doi.org/10.18168/bgi.23"
+    expect: ["*Bouguer*"]
+    notes: "Страница BGI отдаёт сетки через форму: скачать Bouguer 2'×2' вручную."
+
+  - id: cop_dem_glo90
+    title: "Copernicus DEM GLO-90"
+    roles: [terrain]
+    access: tiles
+    license: "Copernicus DEM licence (свободное использование с атрибуцией)"
+    citation: "ESA, Copernicus DEM GLO-90, https://registry.opendata.aws/copernicus-dem/"
+    size_mb: 1500
+    tile_url: "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_{lat}_00_{lon}_00_DEM/Copernicus_DSM_COG_30_{lat}_00_{lon}_00_DEM.tif"
+    notes: "Тайлы 1°×1°, отсутствующие (океан, закрытые) пропускаются."
+
+  - id: sentinel2_l2a
+    title: "Sentinel-2 L2A: летний медианный композит"
+    roles: [spectral]
+    access: stac
+    license: "Copernicus Sentinel data (свободно)"
+    citation: "ESA Copernicus Sentinel-2, Earth Search: https://earth-search.aws.element84.com/v1"
+    size_mb: 6000
+    stac:
+      endpoint: "https://earth-search.aws.element84.com/v1"
+      collection: sentinel-2-c1-l2a
+      bands: [blue, green, red, nir, swir16, swir22, scl]
+      datetime: "2021-06-15/2024-09-15"
+      months: [6, 7, 8, 9]
+      max_cloud: 10
+      resolution_m: 100
+      scenes_per_mgrs: 8   # самые чистые сцены на квадрат MGRS
+    notes: "Композит на тайл 1°×1°, разрешение 100 м (читаются обзоры COG). Нужны extras [geo]."
+
+  - id: usgs_fsu_geology
+    title: "USGS: генерализованная геология бывшего СССР (geo1ec, 1:7,5 млн)"
+    roles: [geology]
+    access: manual
+    license: "Public domain (USGS)"
+    citation: "Drummer, 1998, https://doi.org/10.5066/P9GUL0PQ"
+    page: "https://doi.org/10.5066/P9GUL0PQ"
+    expect: ["geo1ec*"]
+    notes: "ScienceBase закрыт проверкой Cloudflare: скачать geo1ec.zip в браузере."
+
+  - id: gem_active_faults
+    title: "GEM Global Active Faults"
+    roles: [geology]
+    access: direct
+    license: "CC BY-SA 4.0"
+    citation: "Styron, Pagani, 2020, https://doi.org/10.1177/8755293020944182"
+    size_mb: 11
+    files:
+      - url: "https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults_harmonized.geojson"
+        filename: gem_active_faults_harmonized.geojson
+    notes: "Только активные разломы; палеозойские структуры дадут советские карты и линеаменты по DEM."
+
+  - id: geoboundaries
+    title: "geoBoundaries: границы стран"
+    roles: [boundaries]
+    access: geoboundaries
+    license: "ODbL 1.0"
+    citation: "Runfola et al., 2020, https://www.geoboundaries.org"
+    size_mb: 30
+    boundaries:
+      - {iso: KAZ, level: ADM0}
+      - {iso: KAZ, level: ADM1}
+      - {iso: UZB, level: ADM0}
+      - {iso: KGZ, level: ADM0}
+      - {iso: TJK, level: ADM0}
+
+  - id: aster_l1t
+    title: "ASTER L1T / AST_07XT (сырые сцены)"
+    roles: [spectral]
+    access: manual
+    license: "NASA EOSDIS, свободно после регистрации Earthdata"
+    citation: "NASA/METI ASTER, https://search.earthdata.nasa.gov"
+    page: "https://search.earthdata.nasa.gov"
+    expect: ["*.hdf", "*.tif"]
+    notes: "Нужен аккаунт Earthdata. Сначала используем готовые карты изменений из usgs_sir2010_5090n."
+
+  - id: ngs_geomaps_200k
+    title: "Советские геологические карты 1:200 000 и литогеохимия"
+    roles: [geology, geochemistry]
+    access: request
+    license: "По условиям НГС РК"
+    citation: "Национальная геологическая служба РК"
+    page: "https://minerals.gov.kz"
+    expect: ["*"]
+    notes: "Запрос в НГС: геокарты 1:200 000, данные литогеохимии, контуры изученности."

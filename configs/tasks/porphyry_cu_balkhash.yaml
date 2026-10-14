@@ -12,20 +12,20 @@ grid:
 training_area: data/raw/regions/caob_training_area.geojson
 
 labels:
-  source: data/raw/usgs/porphyry_cu_global_2025.gpkg
+  source: data/raw/usgs_porphyry_2025
   include_prospects: true
   mine_mask_buffer_m: 3000   # маска карьеров и отвалов для спектральных признаков
 
 layers:
-  - {name: aster_alteration, group: spectral,   source: data/raw/usgs/sir2010_5090n/aster_alteration}
-  - {name: sentinel2,        group: spectral,   source: data/raw/sentinel2}
-  - {name: dem,              group: terrain,    source: data/raw/copernicus_dem}
-  - {name: emag2,            group: geophysics, source: data/raw/emag2}
+  - {name: aster_alteration, group: spectral,   source: data/raw/usgs_sir2010_5090n}
+  - {name: sentinel2,        group: spectral,   source: data/raw/sentinel2_l2a}
+  - {name: dem,              group: terrain,    source: data/raw/cop_dem_glo90}
+  - {name: emag2,            group: geophysics, source: data/raw/emag2v3}
   - {name: wgm2012_bouguer,  group: geophysics, source: data/raw/wgm2012}
-  - {name: geology_fsu,      group: geology,    source: data/raw/usgs/fsu_geology}
-  - {name: faults_fsu,       group: geology,    source: data/raw/usgs/fsu_faults}
+  - {name: geology_fsu,      group: geology,    source: data/raw/usgs_fsu_geology}
+  - {name: faults_active,    group: geology,    source: data/raw/gem_active_faults}
   # Зоны USGS 2010 строились с учётом известных объектов: только эталон, не признак.
-  - {name: usgs_2010_tracts, group: geology,    source: data/raw/usgs/sir2010_5090n/tracts, benchmark_only: true}
+  - {name: usgs_2010_tracts, group: geology,    source: data/raw/usgs_sir2010_5090n, benchmark_only: true}
 
 model:
   kind: random_forest
