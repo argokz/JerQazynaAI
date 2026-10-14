@@ -164,3 +164,27 @@ def test_ggmplus_tile_orientation(tmp_path):
     assert tile.data[0, 0] == pytest.approx((n - 1) / 10)   # север
     assert tile.data[-1, 0] == 0                            # юг
     assert tile.bounds == pytest.approx((75, 45, 80, 50))
+
+
+def test_dem_processor_on_tilted_plane(tmp_path):
+    from jerqazyna.config import LayerConfig
+    from jerqazyna.features.layers import Context, dem
+
+    # Плоскость z = 0,01·x в проекции сетки: уклон atan(0,01) ≈ 0,573°.
+    src = tmp_path / "dem"
+    src.mkdir()
+    xs = np.arange(0, 20_000, 50) + 25.0
+    z = np.tile(0.01 * xs, (400, 1)).astype(np.float32)
+    _write_raster(src / "plane.tif", z, from_origin(0, 20_000, 50, 50), crs=CRS)
+    grid = GridSpec.from_bounds(CRS, 1000, (0, 0, 20_000, 20_000))
+    layer = LayerConfig(name="dem", group="terrain", source=str(src), kind="dem")
+    task = TaskConfig.model_validate({
+        "task_id": "t", "deposit_type": "t", "labels": {"source": "x"},
+        "layers": [layer.model_dump()],
+        "validation": {"blind_region": {"name": "x", "geometry": "x"}},
+    })
+    bands = dem(layer, Context(task=task, grid=grid, root=tmp_path, log=lambda *_: None))
+    inner = (slice(2, -2), slice(2, -2))
+    assert np.nanmean(bands["slope_deg"][inner]) == pytest.approx(np.degrees(np.arctan(0.01)), rel=0.02)
+    assert bands["elevation_m"][5, 5] == pytest.approx(0.01 * 5_500, abs=1)
+    assert bands["relief_m"][5, 5] == pytest.approx(10, abs=1)

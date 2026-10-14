@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import re
+import warnings
 import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -83,35 +84,75 @@ def _gradient_magnitude(a: np.ndarray, cell_km: float) -> np.ndarray:
 # --- рельеф --------------------------------------------------------------------------------
 
 def dem(layer: LayerConfig, ctx: Context) -> Bands:
-    """Средняя высота, перепад высот и средний уклон в ячейке по тайлам Copernicus DEM."""
+    """Средняя высота, перепад высот и средний уклон в ячейке по тайлам Copernicus DEM.
+
+    Каждый тайл один раз переносится на мелкую сетку (cell / factor, по умолчанию 100 м)
+    в проекции задачи. Там же в метрах считается уклон, а статистики по ячейке
+    получаются свёрткой блоков factor×factor. Это в разы быстрее, чем пять отдельных
+    перепроецирований на крупную сетку.
+    """
     import rasterio
+    from rasterio.warp import Resampling, reproject, transform_bounds
+
+    factor = int(layer.params.get("fine_factor", 10))
+    grid, fine = ctx.grid, ctx.grid.refined(factor)
+    total = np.zeros(grid.shape, np.float64)
+    count = np.zeros(grid.shape, np.float64)
+    slope_total = np.zeros(grid.shape, np.float64)
+    slope_count = np.zeros(grid.shape, np.float64)
+    vmin = np.full(grid.shape, np.nan, np.float32)
+    vmax = np.full(grid.shape, np.nan, np.float32)
 
     tiles = _files(ctx, layer, "*.tif")
-    elev = Accumulator(ctx.grid, ("mean", "min", "max"))
-    slope = Accumulator(ctx.grid)
     used = 0
     for i, path in enumerate(tiles, 1):
         with rasterio.open(path) as src:
+            win = grid.window(transform_bounds(src.crs, grid.crs, *src.bounds))
+            if win is None:
+                continue
+            rows, cols = win
+            h, w = rows.stop - rows.start, cols.stop - cols.start
+            frows = slice(rows.start * factor, rows.stop * factor)
+            fcols = slice(cols.start * factor, cols.stop * factor)
             data = src.read(1).astype(np.float32)
             if src.nodata is not None:
                 data[data == src.nodata] = np.nan
-            tile = TileArray(data, src.transform, src.crs)
-            if not elev.add(tile):
-                continue
-            used += 1
-            # Уклон на исходном разрешении: шаг пикселя в метрах зависит от широты.
-            lat = src.xy(src.height // 2, 0)[1]
-            dy = abs(src.transform.e) * 111_320
-            dx = abs(src.transform.a) * 111_320 * np.cos(np.radians(lat))
-            gy, gx = np.gradient(data, dy, dx)
-            slope.add(TileArray(np.degrees(np.arctan(np.hypot(gx, gy))), src.transform, src.crs))
+            out = np.full((h * factor, w * factor), np.nan, np.float32)
+            reproject(
+                source=data, destination=out,
+                src_transform=src.transform, src_crs=src.crs, src_nodata=np.nan,
+                dst_transform=fine.window_transform(frows, fcols), dst_crs=grid.crs,
+                dst_nodata=np.nan, resampling=Resampling.bilinear,
+            )
+        if not np.isfinite(out).any():
+            continue
+        used += 1
+        gy, gx = np.gradient(out, fine.cell_size)
+        slope = np.degrees(np.arctan(np.hypot(gx, gy)))
+        blocks = out.reshape(h, factor, w, factor)
+        sblocks = slope.reshape(h, factor, w, factor)
+        with np.errstate(invalid="ignore"), warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)  # пустые блоки на краю тайла
+            total[rows, cols] += np.nansum(blocks, axis=(1, 3))
+            count[rows, cols] += np.isfinite(blocks).sum(axis=(1, 3))
+            slope_total[rows, cols] += np.nansum(sblocks, axis=(1, 3))
+            slope_count[rows, cols] += np.isfinite(sblocks).sum(axis=(1, 3))
+            vmin[rows, cols] = np.fmin(vmin[rows, cols], np.nanmin(blocks, axis=(1, 3)))
+            vmax[rows, cols] = np.fmax(vmax[rows, cols], np.nanmax(blocks, axis=(1, 3)))
         if i % 100 == 0:
             ctx.log(f"    DEM: {i}/{len(tiles)} тайлов")
     ctx.log(f"    DEM: в сетку попало {used} тайлов из {len(tiles)}")
+
+    def ratio(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        r = np.full(grid.shape, np.nan, np.float32)
+        ok = b > 0
+        r[ok] = a[ok] / b[ok]
+        return r
+
     return {
-        "elevation_m": elev.mean(),
-        "relief_m": elev.vmax - elev.vmin,
-        "slope_deg": slope.mean(),
+        "elevation_m": ratio(total, count),
+        "relief_m": vmax - vmin,
+        "slope_deg": ratio(slope_total, slope_count),
     }
 
 
