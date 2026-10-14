@@ -8,24 +8,83 @@ grid:
   crs: "+proj=aea +lat_0=45 +lat_1=40 +lat_2=52 +lon_0=70 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
   cell_size_m: 1000
 
-# Весь Центрально-Азиатский пояс (KZ, UZ, KG), чтобы было больше положительных примеров.
-training_area: data/raw/regions/caob_training_area.geojson
+# Область обучения: весь Центрально-Азиатский пояс в границах этих стран.
+training_countries: [KAZ, UZB, KGZ, TJK]
 
 labels:
-  source: data/raw/usgs_porphyry_2025
+  # Пока не скачана база USGS 2025, метки берутся из ГИС-пакета USGS 2010 (41 объект).
+  source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+  layer: Central_Asia_deposits_prospects
+  name_field: Name
+  status_field: SiteStatus
   include_prospects: true
   mine_mask_buffer_m: 3000   # маска карьеров и отвалов для спектральных признаков
 
+# kind — обработчик из src/jerqazyna/features/layers.py; role: feature | benchmark | mask | bias
 layers:
-  - {name: aster_alteration, group: spectral,   source: data/raw/usgs_sir2010_5090n}
-  - {name: sentinel2,        group: spectral,   source: data/raw/sentinel2_l2a}
-  - {name: dem,              group: terrain,    source: data/raw/cop_dem_glo90}
-  - {name: emag2,            group: geophysics, source: data/raw/emag2v3}
-  - {name: wgm2012_bouguer,  group: geophysics, source: data/raw/wgm2012}
-  - {name: geology_fsu,      group: geology,    source: data/raw/usgs_fsu_geology}
-  - {name: faults_active,    group: geology,    source: data/raw/gem_active_faults}
+  - name: dem
+    group: terrain
+    source: data/raw/cop_dem_glo90
+    kind: dem                      # средняя высота, перепад высот в ячейке, уклон
+
+  - name: sentinel2
+    group: spectral
+    source: data/raw/sentinel2_l2a
+    kind: sentinel2_indices        # отношения каналов: глины (B11/B12), оксиды железа (B4/B2) и др.
+
+  - name: aster_alteration
+    group: spectral
+    source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    kind: aster_alteration         # доля площади ячейки с аргиллизитами, филлизитами, окварцеванием
+    params:
+      layers: {argillic: Central_Asia_argillic, phyllic: Central_Asia_phyllic, silicic: Central_Asia_silicic}
+      coverage_layer: Central_Asia_ASTER_scene_index
+
+  - name: magnetics
+    group: geophysics
+    source: data/raw/emag2v3
+    kind: magnetics                # аномалия и её горизонтальный градиент
+    params: {file: EMAG2_V3_UpCont_DataTiff.tif, src_crs: "EPSG:4326"}
+
+  - name: gravity
+    group: geophysics
+    source: data/raw/ggmplus_dg
+    kind: ggmplus_bouguer          # возмущение, простая аномалия Буге и её градиент (после dem)
+
+  - name: geology
+    group: geology
+    source: data/raw/usgs_fsu_geology
+    kind: categorical_polygons     # доля пород каждого класса, расстояние до интрузий
+    # Поле Glg: Q, N, K, Pz ...; интрузии оканчиваются на «i» (TKi, Mzi). Pulkovo 1942, без .prj.
+    params: {pattern: "fsu_geol.shp", field: GLG, src_crs: "EPSG:4284", distance_to_regex: "i$"}
+
+  - name: faults_active
+    group: geology
+    source: data/raw/gem_active_faults
+    kind: distance_to_lines
+    params: {pattern: "*.geojson"}
+
   # Зоны USGS 2010 строились с учётом известных объектов: только эталон, не признак.
-  - {name: usgs_2010_tracts, group: geology,    source: data/raw/usgs_sir2010_5090n, benchmark_only: true}
+  - name: usgs_2010_tracts
+    group: geology
+    source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    kind: polygon_fraction
+    role: benchmark
+    params: {layer: Central_Asia_tracts}
+
+  - name: mine_mask
+    group: mask
+    source: data/raw/mining_polygons_v2
+    kind: mine_mask                # горные выработки + буфер labels.mine_mask_buffer_m
+    role: mask
+    params: {pattern: "*.gpkg"}
+
+  - name: exploration_density
+    group: bias
+    source: data/raw/usgs_mrds
+    kind: point_density            # плотность рудопроявлений MRDS: прокси изученности
+    role: bias
+    params: {sigma_km: 10}
 
 model:
   kind: random_forest

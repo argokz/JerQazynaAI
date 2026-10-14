@@ -6,12 +6,13 @@
 #   stac          — композит Sentinel-2 L2A из Earth Search (AWS), без авторизации
 #   manual        — сайт закрыт защитой от ботов или формой: скачать в браузере в указанную папку
 #   request       — нужен запрос в организацию
+# tiles: tile_url с {lat}/{lon} (N46, E075) или {name} (N45E070); шаг тайла tile_step_deg.
 # Ссылки проверены 2026-10-14.
 
 # Область обучения: казахстанская часть Центрально-Азиатского пояса + Узбекистан, Кыргызстан, Таджикистан.
 aoi:
   name: caob
-  bbox: [55.0, 37.0, 88.0, 55.5]   # lon_min, lat_min, lon_max, lat_max (WGS84)
+  bbox: [46.0, 36.0, 88.0, 56.0]   # lon_min, lat_min, lon_max, lat_max (WGS84): весь KZ, UZ, KG, TJ
   # Тайлы DEM и Sentinel-2 берутся только над этими странами (нужен скачанный geoboundaries).
   countries: [KAZ, UZB, KGZ, TJK]
 
@@ -42,7 +43,8 @@ sources:
     citation: "Magnin, Graham, Huston, Eglington, 2025, https://doi.org/10.5066/P14CCESQ"
     page: "https://doi.org/10.5066/P14CCESQ"
     expect: ["*.xlsx", "*.csv"]
-    notes: "ScienceBase закрыт проверкой Cloudflare: открыть DOI в браузере, скачать таблицу в папку источника."
+    notes: "ScienceBase (и его API) закрыт проверкой Cloudflare, зеркал нет: открыть DOI в браузере,
+      скачать таблицу в папку источника. Пока используются 41 объект из usgs_sir2010_5090n."
 
   - id: usgs_mrds
     title: "USGS Mineral Resources Data System (MRDS)"
@@ -85,15 +87,27 @@ sources:
         filename: EMAG2_V3_Error_DataTiff.tif
     notes: "Глобальные GeoTIFF 2' без CRS в файле: при подготовке назначить EPSG:4326; nodata = 99999."
 
+  - id: ggmplus_dg
+    title: "GGMplus: гравитационные возмущения на поверхности Земли, 7,2\" (~220 м)"
+    roles: [geophysics]
+    access: tiles
+    license: "Свободно для использования с цитированием (Curtin University)"
+    citation: "Hirt et al., 2013, https://doi.org/10.1002/grl.50838"
+    size_mb: 450
+    tile_step_deg: 5
+    tile_url: "https://ddfe.curtin.edu.au/models/GGMplus/data/dg/{name}.dg"
+    notes: "Бинарные тайлы 5°×5°, 2500×2500, int16 big-endian, 0,1 мГал. Замена WGM2012: из них
+      вычисляется простая аномалия Буге с поправкой за слой по DEM."
+
   - id: wgm2012
     title: "WGM2012: аномалии Буге (BGI)"
     roles: [geophysics]
     access: manual
     license: "© BGI/CGMW, проверить условия на странице"
     citation: "Bonvalot et al., 2012, https://doi.org/10.18168/bgi.23"
-    page: "https://doi.org/10.18168/bgi.23"
+    page: "https://bgi.obs-mip.fr/data-products/outils/wgm2012-visualizationextraction/"
     expect: ["*Bouguer*"]
-    notes: "Страница BGI отдаёт сетки через форму: скачать Bouguer 2'×2' вручную."
+    notes: "Выгрузка только через форму с reCAPTCHA. Необязательно: вместо него используется ggmplus_dg."
 
   - id: cop_dem_glo90
     title: "Copernicus DEM GLO-90"
@@ -124,14 +138,21 @@ sources:
     notes: "Композит на тайл 1°×1°, разрешение 100 м (читаются обзоры COG). Нужны extras [geo]."
 
   - id: usgs_fsu_geology
-    title: "USGS: генерализованная геология бывшего СССР (geo1ec, 1:7,5 млн)"
+    title: "USGS: геология бывшего СССР 1:7,5 млн (OFR 01-104, fsu_geol)"
     roles: [geology]
-    access: manual
+    access: direct
     license: "Public domain (USGS)"
-    citation: "Drummer, 1998, https://doi.org/10.5066/P9GUL0PQ"
-    page: "https://doi.org/10.5066/P9GUL0PQ"
-    expect: ["geo1ec*"]
-    notes: "ScienceBase закрыт проверкой Cloudflare: скачать geo1ec.zip в браузере."
+    citation: "USGS OFR 01-104, https://pubs.usgs.gov/of/2001/ofr-01-104/"
+    size_mb: 18
+    files:
+      - url: "https://pubs.usgs.gov/of/2001/ofr-01-104/fsucoal/views/shapes/fsu_geol.shp"
+        filename: fsu_geol.shp
+      - url: "https://pubs.usgs.gov/of/2001/ofr-01-104/fsucoal/views/shapes/FSU_GEOL.DBF"
+        filename: fsu_geol.dbf
+      - url: "https://pubs.usgs.gov/of/2001/ofr-01-104/fsucoal/views/shapes/FSU_GEOL.SHX"
+        filename: fsu_geol.shx
+    notes: "Та же карта, что geo1ec на ScienceBase (Геологическая карта СССР 1966). Файла .prj нет:
+      координаты географические, Pulkovo 1942 (EPSG:4284). Поле Glg: возраст и тип пород."
 
   - id: gem_active_faults
     title: "GEM Global Active Faults"

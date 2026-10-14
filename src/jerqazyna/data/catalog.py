@@ -44,6 +44,7 @@ class Source(BaseModel):
     size_mb: float | None = None
     files: list[FileSpec] = []
     tile_url: str | None = None
+    tile_step_deg: int = Field(1, ge=1)
     boundaries: list[BoundarySpec] = []
     stac: StacSpec | None = None
     page: str | None = None

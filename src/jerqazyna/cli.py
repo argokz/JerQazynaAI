@@ -4,6 +4,7 @@
   jerqazyna data list
   jerqazyna data status
   jerqazyna data fetch [id ...] [--all] [--priority] [--dry-run]
+  jerqazyna prepare <конфиг задачи> [--layers a,b] [--force]
 """
 
 from __future__ import annotations
@@ -94,6 +95,19 @@ def _data(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def _prepare(args: argparse.Namespace) -> int:
+    from jerqazyna.features.prepare import prepare
+
+    task = load_task(args.path)
+    only = [s.strip() for s in args.layers.split(",")] if args.layers else None
+    report = prepare(task, Path(args.root), only=only, force=args.force)
+    print("\nИтог:")
+    for r in report:
+        extra = f", {r['seconds']} с" if "seconds" in r else ""
+        print(f"  {r['layer']:22} {r['status']:13} каналов: {r['bands']}{extra}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     # Консоль Windows по умолчанию не в UTF-8, и кириллица в выводе ломается.
     for stream in (sys.stdout, sys.stderr):
@@ -119,9 +133,17 @@ def main(argv: list[str] | None = None) -> int:
     fetch.add_argument("--dry-run", action="store_true", help="показать, что будет скачано")
     fetch.add_argument("--workers", type=int, default=1, help="параллельных тайлов Sentinel-2")
 
+    prep = sub.add_parser("prepare", help="перенести слои на сетку задачи")
+    prep.add_argument("path", help="конфиг задачи")
+    prep.add_argument("--layers", help="только эти слои, через запятую")
+    prep.add_argument("--force", action="store_true", help="пересчитать готовые слои")
+    prep.add_argument("--root", default=".", help="корень проекта")
+
     args = parser.parse_args(argv)
     if args.command == "validate-config":
         return _validate_config(args)
+    if args.command == "prepare":
+        return _prepare(args)
     return _data(args)
 
 

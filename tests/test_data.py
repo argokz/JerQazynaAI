@@ -8,7 +8,7 @@ import pytest
 from jerqazyna.data.catalog import load_catalog
 from jerqazyna.data.download import Manifest, download, sha256_of
 from jerqazyna.data.fetch import fetch_source
-from jerqazyna.data.tiles import copernicus_tile_urls, degree_tiles
+from jerqazyna.data.tiles import degree_tiles, tile_urls
 
 CATALOG = Path(__file__).parents[1] / "configs" / "sources.yaml"
 
@@ -55,9 +55,16 @@ def test_degree_tiles_priority_first():
     assert tiles[0] == (45, 72)
 
 
+def test_five_degree_tiles_named_by_corner():
+    tiles = degree_tiles((72, 44.5, 80, 48.5), step=5)
+    assert tiles == [(40, 70), (40, 75), (45, 70), (45, 75)]
+    urls = list(tile_urls("https://x/{name}.dg", tiles[-1:]))
+    assert urls == ["https://x/N45E075.dg"]
+
+
 def test_copernicus_tile_names():
     template = "https://x/Copernicus_DSM_COG_30_{lat}_00_{lon}_00_DEM.tif"
-    urls = list(copernicus_tile_urls(template, degree_tiles((74, 46, 75, 47))))
+    urls = list(tile_urls(template, degree_tiles((74, 46, 75, 47))))
     assert urls == ["https://x/Copernicus_DSM_COG_30_N46_00_E074_00_DEM.tif"]
 
 

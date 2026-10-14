@@ -17,7 +17,14 @@ CENTRAL_ASIA_ALBERS = (
     "+proj=aea +lat_0=45 +lat_1=40 +lat_2=52 +lon_0=70 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
 )
 
-FeatureGroup = Literal["spectral", "terrain", "geophysics", "geology", "geochemistry"]
+FeatureGroup = Literal[
+    "spectral", "terrain", "geophysics", "geology", "geochemistry", "mask", "bias"
+]
+# feature   — признак для модели
+# benchmark — эталон для сравнения (строился с учётом известных объектов, в модель нельзя)
+# mask      — маска (например, горные выработки: спектральные признаки там обнуляются)
+# bias      — прокси изученности территории, моделируется отдельно от признаков
+LayerRole = Literal["feature", "benchmark", "mask", "bias"]
 
 
 class GridConfig(BaseModel):
@@ -37,6 +44,9 @@ class GridConfig(BaseModel):
 
 class LabelsConfig(BaseModel):
     source: str
+    layer: str | None = None  # слой внутри geodatabase / GeoPackage
+    name_field: str = "Name"
+    status_field: str = "SiteStatus"
     include_prospects: bool = True
     # Буфер вокруг известных объектов, внутри которого спектральные признаки маскируются,
     # чтобы модель не училась находить карьеры и отвалы.
@@ -46,10 +56,10 @@ class LabelsConfig(BaseModel):
 class LayerConfig(BaseModel):
     name: str
     group: FeatureGroup
-    source: str
-    # Слои, построенные с учётом известных месторождений (зоны USGS, «рудоносность» на картах),
-    # можно использовать только как эталон для сравнения.
-    benchmark_only: bool = False
+    source: str  # папка источника в data/raw
+    kind: str  # обработчик из jerqazyna.features.layers.PROCESSORS
+    role: LayerRole = "feature"
+    params: dict = {}
 
 
 class BlindRegionConfig(BaseModel):
@@ -80,7 +90,8 @@ class TaskConfig(BaseModel):
     deposit_type: str
     seed: int = 42
     grid: GridConfig = GridConfig()
-    training_area: str  # путь к GeoJSON области обучения
+    # Область обучения = объединение границ стран (geoboundaries ADM0).
+    training_countries: list[str] = ["KAZ", "UZB", "KGZ", "TJK"]
     labels: LabelsConfig
     layers: list[LayerConfig]
     model: ModelConfig = ModelConfig()
@@ -92,16 +103,16 @@ class TaskConfig(BaseModel):
         if len(names) != len(set(names)):
             raise ValueError("Имена слоёв должны быть уникальными")
         if not self.feature_layers:
-            raise ValueError("Нужен хотя бы один слой-признак (benchmark_only: false)")
+            raise ValueError("Нужен хотя бы один слой с role: feature")
         return self
 
     @property
     def feature_layers(self) -> list[LayerConfig]:
-        return [layer for layer in self.layers if not layer.benchmark_only]
+        return [layer for layer in self.layers if layer.role == "feature"]
 
     @property
     def benchmark_layers(self) -> list[LayerConfig]:
-        return [layer for layer in self.layers if layer.benchmark_only]
+        return [layer for layer in self.layers if layer.role == "benchmark"]
 
 
 def load_task(path: str | Path) -> TaskConfig:

@@ -11,7 +11,7 @@ from pathlib import Path
 
 from jerqazyna.data.catalog import Catalog, Source
 from jerqazyna.data.download import USER_AGENT, Manifest, download, unzip
-from jerqazyna.data.tiles import copernicus_tile_urls, degree_tiles, tile_bbox, tile_name
+from jerqazyna.data.tiles import degree_tiles, tile_bbox, tile_name, tile_urls
 
 GEOBOUNDARIES_API = "https://www.geoboundaries.org/api/current/gbOpen/{iso}/{level}/"
 
@@ -88,8 +88,9 @@ def fetch_source(
                 unzip(dest, out / dest.stem)
 
     elif src.access == "tiles":
-        tiles = land_tiles(degree_tiles(bbox, catalog.priority_bbox), data_root, catalog)
-        for url in copernicus_tile_urls(src.tile_url, tiles):
+        step = src.tile_step_deg
+        tiles = land_tiles(degree_tiles(bbox, catalog.priority_bbox, step), data_root, catalog, step)
+        for url in tile_urls(src.tile_url, tiles):
             if dry_run:
                 report.planned.append(url)
                 continue
@@ -140,7 +141,7 @@ def fetch_source(
 
 
 def land_tiles(
-    tiles: list[tuple[int, int]], data_root: Path, catalog: Catalog
+    tiles: list[tuple[int, int]], data_root: Path, catalog: Catalog, step: int = 1
 ) -> list[tuple[int, int]]:
     """Оставляет тайлы, пересекающие страны из aoi.countries (по скачанным geoBoundaries)."""
     countries = catalog.aoi.get("countries") or []
@@ -160,7 +161,7 @@ def land_tiles(
         with open(f, encoding="utf-8") as fh:
             shapes.extend(shape(feat["geometry"]) for feat in json.load(fh)["features"])
     land = unary_union(shapes).buffer(0.05)
-    kept = [t for t in tiles if land.intersects(box(*tile_bbox(*t)))]
+    kept = [t for t in tiles if land.intersects(box(*tile_bbox(*t, step)))]
     print(f"  тайлов в охвате: {len(tiles)}, на суше {', '.join(countries)}: {len(kept)}")
     return kept
 
