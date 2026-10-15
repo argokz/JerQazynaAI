@@ -110,6 +110,8 @@ class TaskConfig(BaseModel):
     grid: GridConfig = GridConfig()
     # Область обучения = объединение границ стран (geoboundaries ADM0).
     training_countries: list[str] = ["KAZ", "UZB", "KGZ", "TJK"]
+    # Соседние страны, обрезанные по рамке сетки основных стран (сетка от них не меняется).
+    extra_countries: list[str] = []
     labels: LabelsConfig
     layers: list[LayerConfig]
     model: ModelConfig = ModelConfig()

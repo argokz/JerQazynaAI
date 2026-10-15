@@ -157,26 +157,31 @@ def fetch_source(
 def land_tiles(
     tiles: list[tuple[int, int]], data_root: Path, catalog: Catalog, step: int = 1
 ) -> list[tuple[int, int]]:
-    """Оставляет тайлы, пересекающие страны из aoi.countries (по скачанным geoBoundaries)."""
+    """Оставляет тайлы, пересекающие область: aoi.countries + aoi.extra_countries в рамке сетки.
+
+    Используется та же функция области, что и при подготовке слоёв, поэтому тайлы
+    скачиваются ровно там, где потом будет маска обучения.
+    """
+    import geopandas as gpd
+    from shapely.geometry import box
+
+    from jerqazyna.config import CENTRAL_ASIA_ALBERS
+    from jerqazyna.grid.area import BoundaryMissing, region
+
     countries = catalog.aoi.get("countries") or []
-    files = [
-        Path(data_root) / "raw" / "geoboundaries" / f"geoBoundaries-{iso}-ADM0.geojson"
-        for iso in countries
-    ]
-    files = [f for f in files if f.exists()]
-    if not files:
+    extra = catalog.aoi.get("extra_countries") or []
+    if not countries:
+        return tiles
+    try:
+        area, _ = region(
+            Path(data_root) / "raw" / "geoboundaries", countries, extra, CENTRAL_ASIA_ALBERS, 1000
+        )
+    except BoundaryMissing:
         print("  границы стран не скачаны (geoboundaries): беру все тайлы охвата")
         return tiles
-    from shapely.geometry import box, shape
-    from shapely.ops import unary_union
-
-    shapes = []
-    for f in files:
-        with open(f, encoding="utf-8") as fh:
-            shapes.extend(shape(feat["geometry"]) for feat in json.load(fh)["features"])
-    land = unary_union(shapes).buffer(0.05)
+    land = gpd.GeoSeries([area], crs=CENTRAL_ASIA_ALBERS).to_crs("EPSG:4326").iloc[0].buffer(0.05)
     kept = [t for t in tiles if land.intersects(box(*tile_bbox(*t, step)))]
-    print(f"  тайлов в охвате: {len(tiles)}, на суше {', '.join(countries)}: {len(kept)}")
+    print(f"  тайлов в охвате: {len(tiles)}, в области ({', '.join(countries + extra)}): {len(kept)}")
     return kept
 
 

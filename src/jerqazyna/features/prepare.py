@@ -30,33 +30,40 @@ def features_dir(root: Path, task: TaskConfig) -> Path:
 
 
 def training_area(root: Path, task: TaskConfig):
-    """Объединение границ стран из geoboundaries в CRS сетки."""
-    import geopandas as gpd
-    import pandas as pd
+    """Область обучения в CRS сетки и сама сетка (по основным странам)."""
+    from jerqazyna.grid.area import BoundaryMissing, region
 
-    parts = []
-    for iso in task.training_countries:
-        path = Path(root) / "data" / "raw" / "geoboundaries" / f"geoBoundaries-{iso}-ADM0.geojson"
-        if not path.exists():
-            raise SourceMissing(f"нет границы {iso}: jerqazyna data fetch geoboundaries")
-        parts.append(gpd.read_file(path))
-    area = pd.concat(parts).to_crs(task.grid.crs)
-    return area.geometry.union_all()
+    try:
+        return region(
+            Path(root) / "data" / "raw" / "geoboundaries",
+            task.training_countries, task.extra_countries, task.grid.crs, task.grid.cell_size_m,
+        )
+    except BoundaryMissing as e:
+        raise SourceMissing(str(e)) from e
 
 
 def build_grid(root: Path, task: TaskConfig, out: Path, log=print) -> tuple[GridSpec, np.ndarray]:
-    grid_path, mask_path = out / "grid.json", out / "area_mask.tif"
-    if grid_path.exists() and mask_path.exists():
-        grid = GridSpec.load(grid_path)
-        return grid, read_layer(mask_path).astype(bool)
-    area = training_area(root, task)
-    grid = GridSpec.from_bounds(task.grid.crs, task.grid.cell_size_m, area.bounds)
+    """Сетка и маска области. Маска пересчитывается, если изменился список стран."""
+    grid_path, mask_path, area_path = out / "grid.json", out / "area_mask.tif", out / "area.json"
+    spec = {"core": task.training_countries, "extra": task.extra_countries}
+    cached = grid_path.exists() and mask_path.exists() and area_path.exists()
+    if cached and json.loads(area_path.read_text(encoding="utf-8")) == spec:
+        return GridSpec.load(grid_path), read_layer(mask_path).astype(bool)
+    area, grid = training_area(root, task)
+    if grid_path.exists() and GridSpec.load(grid_path) != grid:
+        raise ValueError(
+            "Основные страны изменились, и сетка стала другой: удалите "
+            f"{out} и подготовьте все слои заново"
+        )
     log(f"  сетка {grid.width}×{grid.height} ячеек по {grid.cell_size:.0f} м")
     mask = polygon_fraction([area], grid, factor=4) >= 0.5
     out.mkdir(parents=True, exist_ok=True)
     grid.save(grid_path)
     write_layer(mask_path, grid, mask.astype(np.uint8), "область обучения")
-    log(f"  область обучения: {mask.sum():,} ячеек ({mask.sum() * (grid.cell_size / 1000) ** 2:,.0f} км²)")
+    area_path.write_text(json.dumps(spec), encoding="utf-8")
+    countries = ", ".join(task.training_countries + task.extra_countries)
+    log(f"  область обучения ({countries}): {mask.sum():,} ячеек "
+        f"({mask.sum() * (grid.cell_size / 1000) ** 2:,.0f} км²)")
     return grid, mask
 
 

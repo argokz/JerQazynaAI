@@ -10,6 +10,9 @@ grid:
 
 # Область обучения: весь Центрально-Азиатский пояс в границах этих стран.
 training_countries: [KAZ, UZB, KGZ, TJK]
+# Тот же пояс за границей: Синьцзян и юг России (Урал, Алтай) внутри рамки сетки.
+# Иран не включён: Тетический пояс с кайнозойскими месторождениями, другая металлогения.
+extra_countries: [CHN, RUS]
 
 labels:
   # Основной источник: глобальная база USGS 2025 (Magnin et al.), только порфировые типы CMMI.
@@ -74,6 +77,13 @@ layers:
     kind: categorical_polygons     # доля пород каждого класса, расстояние до интрузий
     # Поле Glg: Q, N, K, Pz ...; интрузии оканчиваются на «i» (TKi, Mzi). Pulkovo 1942, без .prj.
     params: {pattern: "fsu_geol.shp", field: GLG, src_crs: "EPSG:4284", distance_to_regex: "i$"}
+
+  - name: lithology
+    group: geology
+    source: "data/raw/glim/LiMW_GIS_2015.gdb/LiMW_GIS 2015.gdb"
+    kind: categorical_polygons     # GLiM: 16 классов литологии, одна карта на все страны
+    # pa/pi — кислые и средние плутонические породы: расстояние до них ключевое для порфиров.
+    params: {layer: GLiM_export, field: xx, distance_to_regex: "^(pa|pi)$"}
 
   - name: faults_active
     group: geology

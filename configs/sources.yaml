@@ -15,6 +15,9 @@ aoi:
   bbox: [46.0, 36.0, 88.0, 56.0]   # lon_min, lat_min, lon_max, lat_max (WGS84): весь KZ, UZ, KG, TJ
   # Тайлы DEM и Sentinel-2 берутся только над этими странами (нужен скачанный geoboundaries).
   countries: [KAZ, UZB, KGZ, TJK]
+  # Соседние части того же складчатого пояса: берутся только внутри рамки основных стран
+  # (рамка в проекции сетки), чтобы сетка задачи не менялась.
+  extra_countries: [CHN, RUS]
 
 # Слепой регион (Прибалхашье) скачивается первым, чтобы раньше проверить конвейер.
 priority_bbox: [72.0, 44.5, 80.0, 48.5]
@@ -154,6 +157,20 @@ sources:
     notes: "Та же карта, что geo1ec на ScienceBase (Геологическая карта СССР 1966). Файла .prj нет:
       координаты географические, Pulkovo 1942 (EPSG:4284). Поле Glg: возраст и тип пород."
 
+  - id: glim
+    title: "GLiM: глобальная литологическая карта 1:3,75 млн"
+    roles: [geology]
+    access: direct
+    license: "Свободно с цитированием (авторы публикуют через Dropbox, см. CSDMS и CCGM)"
+    citation: "Hartmann, Moosdorf, 2012, https://doi.org/10.1029/2012GC004370"
+    size_mb: 1140
+    files:
+      - url: "https://www.dropbox.com/s/9vuowtebp9f1iud/LiMW_GIS%202015.gdb.zip?dl=1"
+        filename: LiMW_GIS_2015.gdb.zip
+        unzip: true
+    notes: "Единая литология для всех стран (кислые и средние плутоны pa/pi, вулканиты va/vi ...).
+      Ссылка указана на https://csdms.colorado.edu/wiki/Alldata:GLiM; это личный Dropbox авторов."
+
   - id: gem_active_faults
     title: "GEM Global Active Faults"
     roles: [geology]
@@ -179,6 +196,8 @@ sources:
       - {iso: UZB, level: ADM0}
       - {iso: KGZ, level: ADM0}
       - {iso: TJK, level: ADM0}
+      - {iso: CHN, level: ADM0}
+      - {iso: RUS, level: ADM0}
 
   - id: aster_l1t
     title: "ASTER L1T / AST_07XT (сырые сцены)"

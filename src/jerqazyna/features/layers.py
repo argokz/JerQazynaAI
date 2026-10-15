@@ -292,8 +292,12 @@ def _safe(name: str) -> str:
 
 def categorical_polygons(layer: LayerConfig, ctx: Context) -> Bands:
     """Доля каждого класса пород в ячейке и расстояние до классов по regex (например, интрузии)."""
-    path = _files(ctx, layer, layer.params.get("pattern", "*.shp"))[0]
-    gdf = _read_vector(ctx, path, src_crs=layer.params.get("src_crs"))
+    if "layer" in layer.params:  # geodatabase / GeoPackage: source указывает на сам файл
+        path, layer_name = ctx.path(layer.source), layer.params["layer"]
+    else:
+        path, layer_name = _files(ctx, layer, layer.params.get("pattern", "*.shp"))[0], None
+    gdf = _read_vector(ctx, path, layer_name, src_crs=layer.params.get("src_crs"))
+    ctx.log(f"    полигонов в охвате: {len(gdf):,}")
     wanted = layer.params["field"].lower()
     field = next((c for c in gdf.columns if c.lower() == wanted), None)
     if field is None:
@@ -301,10 +305,15 @@ def categorical_polygons(layer: LayerConfig, ctx: Context) -> Bands:
     out: Bands = {}
     for cls, part in gdf.groupby(field):
         out[f"frac_{_safe(cls)}"] = polygon_fraction(part.geometry.values, ctx.grid, factor=4)
+    # Вне карты (например, геология СССР в Китае) доли неизвестны, а не равны нулю.
+    covered = np.sum(list(out.values()), axis=0) >= 0.5
     if regex := layer.params.get("distance_to_regex"):
         sel = gdf[gdf[field].astype(str).str.contains(regex, regex=True)]
         ctx.log(f"    классы для расстояния ({regex}): {sorted(sel[field].unique())}")
         out["distance_km"] = distance_km(sel.geometry.values, ctx.grid)
+    for band in out.values():
+        band[~covered] = np.nan
+    ctx.log(f"    карта покрывает {covered.mean():.1%} сетки")
     return out
 
 
