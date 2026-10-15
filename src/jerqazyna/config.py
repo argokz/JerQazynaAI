@@ -45,6 +45,9 @@ class GridConfig(BaseModel):
 class LabelsConfig(BaseModel):
     source: str
     layer: str | None = None  # слой внутри geodatabase / GeoPackage
+    # Для CSV/XLSX: колонки координат WGS84; если не заданы, ищутся по имени (latitude/lat...).
+    lon_field: str | None = None
+    lat_field: str | None = None
     name_field: str = "Name"
     status_field: str = "SiteStatus"
     include_prospects: bool = True

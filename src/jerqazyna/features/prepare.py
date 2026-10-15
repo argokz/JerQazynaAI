@@ -60,16 +60,55 @@ def build_grid(root: Path, task: TaskConfig, out: Path, log=print) -> tuple[Grid
     return grid, mask
 
 
+def _points_from_table(path: Path, cfg):
+    """Точки из CSV/XLSX: колонки координат из конфига или найденные по имени (lat/lon)."""
+    import geopandas as gpd
+    import pandas as pd
+
+    if path.suffix.lower() == ".xlsx":
+        df = pd.read_excel(path)
+    else:
+        try:
+            df = pd.read_csv(path, low_memory=False)
+        except UnicodeDecodeError:
+            df = pd.read_csv(path, low_memory=False, encoding="latin-1")
+
+    def pick(configured: str | None, candidates: tuple[str, ...]) -> str:
+        if configured:
+            return configured
+        lower = {c.lower(): c for c in df.columns}
+        for cand in candidates:
+            if cand in lower:
+                return lower[cand]
+        raise ValueError(f"{path.name}: не нашёл колонку координат {candidates}; есть: {list(df.columns)}")
+
+    lon = pick(cfg.lon_field, ("longitude", "lon", "long", "x", "lon_dd", "longitude_dd"))
+    lat = pick(cfg.lat_field, ("latitude", "lat", "y", "lat_dd", "latitude_dd"))
+    df = df.dropna(subset=[lon, lat])
+    return gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df[lon], df[lat]), crs="EPSG:4326")
+
+
 def build_labels(root: Path, task: TaskConfig, grid: GridSpec, mask: np.ndarray, out: Path, log=print):
     import geopandas as gpd
 
     cfg = task.labels
     src = Path(root) / cfg.source
+    if src.is_dir():  # папка источника: берём первую таблицу или геофайл в ней
+        found = sorted(p for ext in ("*.csv", "*.xlsx", "*.gpkg") for p in src.rglob(ext))
+        if not found:
+            raise SourceMissing(f"в {src} нет файлов меток (csv, xlsx, gpkg)")
+        src = found[0]
     if not src.exists():
         raise SourceMissing(f"нет источника меток {src}")
-    gdf = gpd.read_file(src, layer=cfg.layer)
+    if src.suffix.lower() in (".csv", ".xlsx"):
+        gdf = _points_from_table(src, cfg)
+    else:
+        gdf = gpd.read_file(src, layer=cfg.layer)
+    for field in (cfg.name_field, cfg.status_field):
+        if field not in gdf.columns:
+            raise ValueError(f"{src.name}: нет поля {field!r}; есть: {list(gdf.columns)}")
     if not cfg.include_prospects:
-        gdf = gdf[gdf[cfg.status_field].str.lower() != "prospect"]
+        gdf = gdf[gdf[cfg.status_field].astype(str).str.lower() != "prospect"]
     lonlat = gdf.to_crs("EPSG:4326").geometry
     xy = gdf.to_crs(grid.crs).geometry
     rows, cols = grid.rowcol(xy.x.to_numpy(), xy.y.to_numpy())

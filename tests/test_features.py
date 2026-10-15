@@ -188,3 +188,27 @@ def test_dem_processor_on_tilted_plane(tmp_path):
     assert np.nanmean(bands["slope_deg"][inner]) == pytest.approx(np.degrees(np.arctan(0.01)), rel=0.02)
     assert bands["elevation_m"][5, 5] == pytest.approx(0.01 * 5_500, abs=1)
     assert bands["relief_m"][5, 5] == pytest.approx(10, abs=1)
+
+
+def test_labels_from_csv_folder(tmp_path):
+    import pandas as pd
+
+    from jerqazyna.features.prepare import build_labels
+
+    src = tmp_path / "data" / "raw" / "porphyry"
+    src.mkdir(parents=True)
+    pd.DataFrame({
+        "Deposit": ["A", "B"], "Status": ["deposit", "prospect"],
+        "Latitude": [46.5, 46.6], "Longitude": [70.5, 70.6],
+    }).to_csv(src / "db.csv", index=False)
+    grid = GridSpec.from_bounds(CRS, 5000, (-100_000, 0, 200_000, 300_000))
+    mask = np.ones(grid.shape, bool)
+    task = TaskConfig.model_validate({
+        "task_id": "t", "deposit_type": "t",
+        "labels": {"source": "data/raw/porphyry", "name_field": "Deposit", "status_field": "Status",
+                   "include_prospects": False},
+        "layers": [{"name": "x", "group": "terrain", "source": "x", "kind": "dem"}],
+        "validation": {"blind_region": {"name": "x", "geometry": "x"}},
+    })
+    table = build_labels(tmp_path, task, grid, mask, tmp_path, log=lambda *_: None)
+    assert table.name.tolist() == ["A"] and bool(table.in_area.iloc[0])
