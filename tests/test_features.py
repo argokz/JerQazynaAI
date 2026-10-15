@@ -139,7 +139,8 @@ def test_prepare_end_to_end(tmp_path):
     assert np.nanmin(value[mask]) > 69.9 and np.nanmax(value[mask]) < 71.1
 
     table = __import__("pandas").read_csv(out / "labels.csv")
-    assert table.set_index("name").in_area.to_dict() == {"A": True, "B": False}
+    # B (75° в. д.) за пределами сетки — отбрасывается
+    assert table.set_index("name").in_area.to_dict() == {"A": True}
     row = table.set_index("name").loc["A"]
     assert 0 <= row.row < grid.height and 0 <= row.col < grid.width
 
@@ -212,3 +213,20 @@ def test_labels_from_csv_folder(tmp_path):
     })
     table = build_labels(tmp_path, task, grid, mask, tmp_path, log=lambda *_: None)
     assert table.name.tolist() == ["A"] and bool(table.in_area.iloc[0])
+
+
+def test_merge_labels_adds_far_and_takes_status_from_near():
+    from jerqazyna.features.prepare import merge_labels
+
+    primary = gpd.GeoDataFrame(
+        {"name": ["A", "B"], "status": ["", ""], "source": "new"},
+        geometry=gpd.points_from_xy([0, 100_000], [0, 0]), crs=CRS,
+    )
+    extra = gpd.GeoDataFrame(
+        {"name": ["A old", "C"], "status": ["deposit", "prospect"], "source": "old"},
+        geometry=gpd.points_from_xy([1_000, 50_000], [0, 0]), crs=CRS,
+    )
+    merged, same, added = merge_labels(primary, extra, radius_m=5_000)
+    assert (same, added) == (1, 1)
+    assert merged.name.tolist() == ["A", "B", "C"]
+    assert merged.status.tolist() == ["deposit", "", "prospect"]

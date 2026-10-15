@@ -42,14 +42,29 @@ class GridConfig(BaseModel):
         return v
 
 
-class LabelsConfig(BaseModel):
-    source: str
+class LabelSource(BaseModel):
+    source: str  # файл или папка источника
     layer: str | None = None  # слой внутри geodatabase / GeoPackage
     # Для CSV/XLSX: колонки координат WGS84; если не заданы, ищутся по имени (latitude/lat...).
     lon_field: str | None = None
     lat_field: str | None = None
+    encoding: str | None = None
     name_field: str = "Name"
-    status_field: str = "SiteStatus"
+    status_field: str | None = "SiteStatus"  # None — в источнике нет статуса
+    # Оставить только объекты, у которых поле type_field совпадает с type_regex.
+    type_field: str | None = None
+    type_regex: str | None = None
+    # Дополнительные колонки в labels.csv: {имя в таблице: поле источника}.
+    extra_fields: dict[str, str] = {}
+
+
+class LabelsConfig(LabelSource):
+    """Основной источник меток и дополнительные, объединяемые по расстоянию."""
+
+    # Объект дополнительного источника ближе merge_radius_m к уже взятому считается тем же
+    # (у него берётся только статус, если у основного его нет); дальше — добавляется.
+    merge: list[LabelSource] = []
+    merge_radius_m: float = Field(5000.0, ge=0)
     include_prospects: bool = True
     # Буфер вокруг известных объектов, внутри которого спектральные признаки маскируются,
     # чтобы модель не училась находить карьеры и отвалы.

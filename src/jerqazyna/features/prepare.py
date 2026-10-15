@@ -67,6 +67,8 @@ def _points_from_table(path: Path, cfg):
 
     if path.suffix.lower() == ".xlsx":
         df = pd.read_excel(path)
+    elif cfg.encoding:
+        df = pd.read_csv(path, low_memory=False, encoding=cfg.encoding)
     else:
         try:
             df = pd.read_csv(path, low_memory=False)
@@ -84,16 +86,19 @@ def _points_from_table(path: Path, cfg):
 
     lon = pick(cfg.lon_field, ("longitude", "lon", "long", "x", "lon_dd", "longitude_dd"))
     lat = pick(cfg.lat_field, ("latitude", "lat", "y", "lat_dd", "latitude_dd"))
+    df = df.assign(**{lon: pd.to_numeric(df[lon], errors="coerce"),
+                      lat: pd.to_numeric(df[lat], errors="coerce")})
     df = df.dropna(subset=[lon, lat])
     return gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df[lon], df[lat]), crs="EPSG:4326")
 
 
-def build_labels(root: Path, task: TaskConfig, grid: GridSpec, mask: np.ndarray, out: Path, log=print):
+def load_label_source(root: Path, cfg, grid: GridSpec):
+    """Один источник меток → GeoDataFrame в CRS сетки с колонками name, status, source, extra."""
     import geopandas as gpd
+    import pandas as pd
 
-    cfg = task.labels
     src = Path(root) / cfg.source
-    if src.is_dir():  # папка источника: берём первую таблицу или геофайл в ней
+    if src.is_dir() and src.suffix.lower() != ".gdb":  # .gdb — база ESRI, а не папка с файлами
         found = sorted(p for ext in ("*.csv", "*.xlsx", "*.gpkg") for p in src.rglob(ext))
         if not found:
             raise SourceMissing(f"в {src} нет файлов меток (csv, xlsx, gpkg)")
@@ -104,30 +109,81 @@ def build_labels(root: Path, task: TaskConfig, grid: GridSpec, mask: np.ndarray,
         gdf = _points_from_table(src, cfg)
     else:
         gdf = gpd.read_file(src, layer=cfg.layer)
-    for field in (cfg.name_field, cfg.status_field):
-        if field not in gdf.columns:
-            raise ValueError(f"{src.name}: нет поля {field!r}; есть: {list(gdf.columns)}")
+
+    fields = [cfg.name_field, cfg.status_field, cfg.type_field, *cfg.extra_fields.values()]
+    missing = [f for f in fields if f and f not in gdf.columns]
+    if missing:
+        raise ValueError(f"{src.name}: нет полей {missing}; есть: {list(gdf.columns)}")
+    if cfg.type_field and cfg.type_regex:
+        gdf = gdf[gdf[cfg.type_field].astype(str).str.contains(cfg.type_regex, regex=True)]
+
+    gdf = gdf.to_crs(grid.crs)
+    x0, y0, x1, y1 = grid.bounds
+    gdf = gdf[(gdf.geometry.x >= x0) & (gdf.geometry.x < x1) & (gdf.geometry.y > y0) & (gdf.geometry.y <= y1)]
+    out = gpd.GeoDataFrame({
+        "name": gdf[cfg.name_field].astype(str).str.strip().to_numpy(),
+        "status": (gdf[cfg.status_field].astype(str).str.lower().to_numpy()
+                   if cfg.status_field else np.full(len(gdf), "")),
+        "source": src.name,
+    }, geometry=gdf.geometry.to_numpy(), crs=grid.crs)
+    for name, field in cfg.extra_fields.items():
+        values = gdf[field]
+        numeric = pd.to_numeric(values, errors="coerce")
+        # Числовая колонка, если большинство непустых значений — числа (например, «1.1-3.2» → NaN)
+        out[name] = (numeric if numeric.notna().sum() >= 0.5 * values.notna().sum() else values).to_numpy()
+    return out
+
+
+def merge_labels(primary, extra, radius_m: float):
+    """Добавляет объекты extra дальше radius_m от primary; у близких берёт статус, если его нет."""
+    import pandas as pd
+
+    if primary.empty:
+        return extra.copy(), 0, len(extra)
+    idx, dist = primary.sindex.nearest(extra.geometry, return_distance=True, return_all=False)
+    nearest = np.full(len(extra), -1)
+    d = np.full(len(extra), np.inf)
+    nearest[idx[0]] = idx[1]
+    d[idx[0]] = dist
+    same = d <= radius_m
+    merged = primary.copy()
+    for i in np.flatnonzero(same):
+        j = merged.index[nearest[i]]
+        if not merged.at[j, "status"] and extra.iloc[i]["status"]:
+            merged.at[j, "status"] = extra.iloc[i]["status"]
+    added = extra[~same]
+    merged = pd.concat([merged, added], ignore_index=True)
+    return merged, int(same.sum()), int((~same).sum())
+
+
+def build_labels(root: Path, task: TaskConfig, grid: GridSpec, mask: np.ndarray, out: Path, log=print):
+    cfg = task.labels
+    table = load_label_source(root, cfg, grid)
+    log(f"  {Path(cfg.source).name}: {len(table)} объектов в охвате сетки")
+    for extra_cfg in cfg.merge:
+        try:
+            extra = load_label_source(root, extra_cfg, grid)
+        except SourceMissing as e:
+            log(f"  пропуск дополнительного источника: {e}")
+            continue
+        table, same, added = merge_labels(table, extra, cfg.merge_radius_m)
+        log(f"  + {extra['source'].iloc[0] if len(extra) else extra_cfg.source}: совпало {same}, добавлено {added}")
     if not cfg.include_prospects:
-        gdf = gdf[gdf[cfg.status_field].astype(str).str.lower() != "prospect"]
-    lonlat = gdf.to_crs("EPSG:4326").geometry
-    xy = gdf.to_crs(grid.crs).geometry
-    rows, cols = grid.rowcol(xy.x.to_numpy(), xy.y.to_numpy())
-    inside = (rows >= 0) & (rows < grid.height) & (cols >= 0) & (cols < grid.width)
-    in_area = np.zeros(len(gdf), bool)
-    in_area[inside] = mask[rows[inside], cols[inside]]
-    table = gdf[[cfg.name_field, cfg.status_field]].rename(
-        columns={cfg.name_field: "name", cfg.status_field: "status"}
-    )
-    table = table.assign(
+        table = table[table.status != "prospect"]
+
+    xs, ys = table.geometry.x.to_numpy(), table.geometry.y.to_numpy()
+    rows, cols = grid.rowcol(xs, ys)
+    lonlat = table.to_crs("EPSG:4326").geometry
+    in_area = mask[rows, cols]
+    result = table.drop(columns="geometry").assign(
         lon=lonlat.x.round(5).to_numpy(), lat=lonlat.y.round(5).to_numpy(),
-        x=xy.x.round(1).to_numpy(), y=xy.y.round(1).to_numpy(),
-        row=rows, col=cols, in_area=in_area,
+        x=np.round(xs, 1), y=np.round(ys, 1), row=rows, col=cols, in_area=in_area,
     )
-    table.to_csv(out / "labels.csv", index=False, encoding="utf-8")
-    shared = table[table.in_area].duplicated(["row", "col"]).sum()
-    log(f"  меток: {len(table)}, в области обучения: {int(in_area.sum())}, "
+    result.to_csv(out / "labels.csv", index=False, encoding="utf-8")
+    shared = result[result.in_area].duplicated(["row", "col"]).sum()
+    log(f"  меток: {len(result)}, в области обучения: {int(in_area.sum())}, "
         f"делят ячейку с другой меткой: {int(shared)}")
-    return table
+    return result
 
 
 def _layer_files(out: Path, name: str) -> list[Path]:

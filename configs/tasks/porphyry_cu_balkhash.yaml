@@ -12,11 +12,28 @@ grid:
 training_countries: [KAZ, UZB, KGZ, TJK]
 
 labels:
-  # Пока не скачана база USGS 2025, метки берутся из ГИС-пакета USGS 2010 (41 объект).
-  source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
-  layer: Central_Asia_deposits_prospects
-  name_field: Name
-  status_field: SiteStatus
+  # Основной источник: глобальная база USGS 2025 (Magnin et al.), только порфировые типы CMMI.
+  source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+  encoding: latin-1
+  lon_field: LONGITUDE
+  lat_field: LATITUDE
+  name_field: DEPOSIT
+  status_field: null            # в базе 2025 нет статуса; берётся из пакета 2010 при совпадении
+  type_field: CMMI_DEPOSIT_TYPE
+  type_regex: "^Porphyry"
+  extra_fields:
+    deposit_type: CMMI_DEPOSIT_TYPE
+    country: COUNTRY
+    tonnage_mt: ORE_TONNAGE_MT
+    cu_pct: CU_PERCENT
+    age_ma: ASSIGNED_AGE_MA
+  # Пакет USGS 2010: проспекты, которых нет в базе 2025, и статус «deposit / prospect».
+  merge:
+    - source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+      layer: Central_Asia_deposits_prospects
+      name_field: Name
+      status_field: SiteStatus
+  merge_radius_m: 5000
   include_prospects: true
   mine_mask_buffer_m: 3000   # маска карьеров и отвалов для спектральных признаков
 
