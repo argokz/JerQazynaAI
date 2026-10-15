@@ -230,3 +230,18 @@ def test_merge_labels_adds_far_and_takes_status_from_near():
     assert (same, added) == (1, 1)
     assert merged.name.tolist() == ["A", "B", "C"]
     assert merged.status.tolist() == ["deposit", "", "prospect"]
+
+
+@pytest.mark.parametrize("offset_px", [0, 3, 45])
+def test_fast_aligned_path_matches_reprojection(grid, offset_px):
+    rng = np.random.default_rng(offset_px)
+    data = rng.random((70, 83)).astype(np.float32)
+    data[5:9, 10:30] = np.nan
+    tile = TileArray(data, from_origin(offset_px * 100, 9_500, 100, 100), CRS)
+    fast, slow = Accumulator(grid, ("mean", "min", "max")), Accumulator(grid, ("mean", "min", "max"), fast=False)
+    assert fast._aligned(tile) is not None
+    fast.add(tile)
+    slow.add(tile)
+    np.testing.assert_allclose(fast.mean(), slow.mean(), rtol=1e-5, atol=1e-6)
+    np.testing.assert_allclose(fast.vmax, slow.vmax, rtol=1e-6)
+    np.testing.assert_allclose(fast.vmin, slow.vmin, rtol=1e-6)

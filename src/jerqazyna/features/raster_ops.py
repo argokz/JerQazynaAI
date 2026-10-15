@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
@@ -36,6 +37,7 @@ class Accumulator:
 
     grid: GridSpec
     stats: tuple[str, ...] = ("mean",)
+    fast: bool = True  # тайлы на решётке сетки суммируются блоками, без перепроецирования
     total: np.ndarray = field(init=False)
     weight: np.ndarray = field(init=False)
     vmin: np.ndarray = field(init=False)
@@ -50,9 +52,59 @@ class Accumulator:
         if "max" in self.stats:
             self.vmax = np.full(shape, np.nan, np.float32)
 
+    def _aligned(self, tile: TileArray) -> tuple[int, int, int] | None:
+        """(k, сдвиг по столбцам, сдвиг по строкам в пикселях тайла), если тайл в CRS сетки,
+        его пиксель делит ячейку нацело и лежит на той же решётке; иначе None."""
+        import pyproj
+
+        t = tile.transform
+        if t.b != 0 or t.d != 0 or t.a <= 0 or t.a != -t.e:
+            return None
+        k = self.grid.cell_size / t.a
+        col_off = (t.c - self.grid.x_min) / t.a
+        row_off = (self.grid.y_max - t.f) / t.a
+        if any(abs(v - round(v)) > 1e-6 for v in (k, col_off, row_off)):
+            return None
+        if not pyproj.CRS(str(tile.crs)).equals(pyproj.CRS(self.grid.crs), ignore_axis_order=True):
+            return None
+        return round(k), round(col_off), round(row_off)
+
+    def _add_aligned(self, tile: TileArray, k: int, col_off: int, row_off: int) -> bool:
+        """Быстрый путь без перепроецирования: среднее, минимум и максимум по блокам k×k."""
+        h, w = tile.data.shape
+        r0, c0 = max(0, row_off // k), max(0, col_off // k)
+        r1 = min(self.grid.height, -(-(row_off + h) // k))
+        c1 = min(self.grid.width, -(-(col_off + w) // k))
+        if r0 >= r1 or c0 >= c1:
+            return False
+        fine = np.full(((r1 - r0) * k, (c1 - c0) * k), np.nan, np.float32)
+        # Пересечение тайла с окном в пикселях тайла
+        fr0, fc0 = r0 * k - row_off, c0 * k - col_off
+        tr0, tc0 = max(0, fr0), max(0, fc0)
+        tr1, tc1 = min(h, fr0 + fine.shape[0]), min(w, fc0 + fine.shape[1])
+        if tr0 >= tr1 or tc0 >= tc1:
+            return False
+        fine[tr0 - fr0:tr1 - fr0, tc0 - fc0:tc1 - fc0] = tile.data[tr0:tr1, tc0:tc1]
+        blocks = fine.reshape(r1 - r0, k, c1 - c0, k)
+        valid = np.isfinite(blocks)
+        if not valid.any():
+            return False
+        rows, cols = slice(r0, r1), slice(c0, c1)
+        self.total[rows, cols] += np.where(valid, blocks, 0).sum(axis=(1, 3))
+        self.weight[rows, cols] += valid.sum(axis=(1, 3))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)  # пустые блоки
+            if "min" in self.stats:
+                self.vmin[rows, cols] = np.fmin(self.vmin[rows, cols], np.nanmin(blocks, axis=(1, 3)))
+            if "max" in self.stats:
+                self.vmax[rows, cols] = np.fmax(self.vmax[rows, cols], np.nanmax(blocks, axis=(1, 3)))
+        return True
+
     def add(self, tile: TileArray) -> bool:
         from rasterio.warp import Resampling, reproject, transform_bounds
 
+        if self.fast and (aligned := self._aligned(tile)) is not None:
+            return self._add_aligned(tile, *aligned)
         win = self.grid.window(transform_bounds(tile.crs, self.grid.crs, *tile.bounds))
         if win is None:
             return False
