@@ -4,6 +4,7 @@
 и число объектов теста по статусам. Признаки и прогнозы закрытого региона не читаются.
 """
 
+import csv
 import json
 from pathlib import Path
 from typing import Annotated, Literal
@@ -116,8 +117,6 @@ def load_protocol(path: str | Path) -> tuple[BlindProtocol, str]:
 
 def verify_frozen_inputs(protocol: BlindProtocol, root: Path, split: Path) -> dict:
     """Сверяет протокол с сохранёнными разбиением и моделью до открытия региона."""
-    import pandas as pd
-
     root, split = Path(root), Path(split)
     saved_split = json.loads((split / "split.json").read_text(encoding="utf-8"))
     if saved_split["split_id"] != protocol.split_id:
@@ -137,9 +136,9 @@ def verify_frozen_inputs(protocol: BlindProtocol, root: Path, split: Path) -> di
     cv = json.loads((run_dir / "cv.json").read_text(encoding="utf-8"))
     if cv["selected_classifier"] != protocol.frozen_model.classifier:
         raise ValueError("Классификатор прогона не совпадает с протоколом")
-    labels = pd.read_csv(split / "labels.csv")
-    test = labels[labels.partition == "test"]
-    n_positive = int(test.status.isin(protocol.objects.positive_statuses).sum())
+    with open(split / "labels.csv", encoding="utf-8", newline="") as stream:
+        test = [row["status"] for row in csv.DictReader(stream) if row["partition"] == "test"]
+    n_positive = sum(status in protocol.objects.positive_statuses for status in test)
     if n_positive != protocol.objects.n_positive:
         raise ValueError(f"В тесте {n_positive} положительных объектов, протокол ожидает "
                          f"{protocol.objects.n_positive}")
