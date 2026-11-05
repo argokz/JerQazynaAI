@@ -114,7 +114,7 @@ sources:
     title: "GGMplus: гравитационные возмущения на поверхности Земли, 7,2\" (~220 м)"
     roles: [geophysics]
     access: tiles
-    license: "Свободно для использования с цитированием (Curtin University)"
+    license: "Лицензия не указана: readme — freely available + цитирование; коммерция требует письменного разрешения Curtin"
     citation: "Hirt et al., 2013, https://doi.org/10.1002/grl.50838"
     size_mb: 450
     tile_step_deg: 5
@@ -126,7 +126,7 @@ sources:
     title: "WGM2012: аномалии Буге (BGI)"
     roles: [geophysics]
     access: manual
-    license: "© BGI/CGMW, проверить условия на странице"
+    license: "Условия не найдены; не используется"
     citation: "Bonvalot et al., 2012, https://doi.org/10.18168/bgi.23"
     page: "https://bgi.obs-mip.fr/data-products/outils/wgm2012-visualizationextraction/"
     expect: ["*Bouguer*"]
@@ -136,7 +136,7 @@ sources:
     title: "Copernicus DEM GLO-90"
     roles: [terrain]
     access: tiles
-    license: "Copernicus DEM licence (свободное использование с атрибуцией)"
+    license: "Copernicus WorldDEM-90 licence: коммерция разрешена; атрибуция DLR/Airbus и отказ от ответственности передаются клиентам"
     citation: "ESA, Copernicus DEM GLO-90, https://registry.opendata.aws/copernicus-dem/"
     size_mb: 1500
     tile_url: "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_{lat}_00_{lon}_00_DEM/Copernicus_DSM_COG_30_{lat}_00_{lon}_00_DEM.tif"
@@ -146,7 +146,7 @@ sources:
     title: "Sentinel-2 L2A: летний медианный композит"
     roles: [spectral]
     access: stac
-    license: "Copernicus Sentinel data (свободно)"
+    license: "Copernicus Sentinel Legal Notice: свободно; атрибуция «Contains modified Copernicus Sentinel data [год]»"
     citation: "ESA Copernicus Sentinel-2, Earth Search: https://earth-search.aws.element84.com/v1"
     size_mb: 6000
     stac:
@@ -164,7 +164,7 @@ sources:
     title: "USGS: геология бывшего СССР 1:7,5 млн (OFR 01-104, fsu_geol)"
     roles: [geology]
     access: direct
-    license: "Public domain (USGS)"
+    license: "USGS + ESRI: береговая линия и границы стран — собственность ESRI, только внутреннее использование; передача третьим лицам запрещена"
     citation: "USGS OFR 01-104, https://pubs.usgs.gov/of/2001/ofr-01-104/"
     size_mb: 18
     files:
@@ -181,7 +181,7 @@ sources:
     title: "GLiM: глобальная литологическая карта 1:3,75 млн"
     roles: [geology]
     access: direct
-    license: "Свободно с цитированием (авторы публикуют через Dropbox, см. CSDMS и CCGM)"
+    license: "Лицензия ГИС-архива не указана (PDF-карта CCGM — по соглашению); коммерция требует письменного разрешения авторов"
     citation: "Hartmann, Moosdorf, 2012, https://doi.org/10.1029/2012GC004370"
     size_mb: 1140
     files:
@@ -207,7 +207,7 @@ sources:
     title: "geoBoundaries: границы стран"
     roles: [boundaries]
     access: geoboundaries
-    license: "ODbL 1.0"
+    license: "ODbL 1.0 (OSM) для KAZ, UZB, KGZ, TJK, RUS; CHN — public domain"
     citation: "Runfola et al., 2020, https://www.geoboundaries.org"
     size_mb: 30
     boundaries:
