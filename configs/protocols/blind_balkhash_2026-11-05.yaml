@@ -1,0 +1,57 @@
+# Предрегистрация слепого теста Прибалхашья. Зафиксировано до открытия региона.
+# Прогнозы, признаки и OOF-оценки внутри теста и буфера при составлении не читались.
+# Изменение этого файла после открытия региона делает результат исследовательским.
+protocol_id: blind_balkhash_2026-11-05
+task_config: configs/tasks/porphyry_cu_balkhash.yaml
+split_id: 4c6107e6c0a9f029700120dbecf0e55f494cd780eda24a393bde852714366c23
+region_provisional: true            # граница не утверждена геологом: отчёт помечается как предварительный
+
+frozen_model:
+  run_dir: outputs/porphyry_cu_balkhash/porphyry_cu_baseline/ce67b6ff52175829
+  run_id: ce67b6ff52175829e7df5d8a20b875899b7c643aa7b2ef8e2e1f9e5518417996
+  model_sha256: f8f702167e4a71a89e663ea5daf38be5a8752df26dc5ee57662547016062c2e8
+  classifier: random_forest         # выбран по CV 19.10.2026; переобучение и замена запрещены
+
+objects:
+  positive_statuses: [deposit, prospect]
+  n_positive: 17                    # 8 deposit + 9 prospect по split.json; неизвестный статус (3) — только описательно
+  uncovered_policy: miss            # объект в ячейке без достаточного покрытия признаков считается промахом
+
+evaluation:
+  area_mask: test_cells             # знаменатель — ячейки теста; буфер не оценивается
+  min_valid_fraction: 0.5           # то же правило покрытия, что при обучении
+  primary_area_fraction: 0.20
+  descriptive_area_fractions: [0.05, 0.10]
+  capture_targets: [0.5, 0.8]       # минимальная доля площади для ожидаемого захвата 50% и 80%
+  confidence: 0.95
+  heuristic:
+    band: lithology__distance_km    # меньше расстояние — выше ранг
+    nan_fill: train_median          # медиана по таблице train, без значений теста
+  benchmark:
+    layer: usgs_2010_tracts         # сравнение при равной площади; тракты строились с учётом известных объектов
+
+# Проверки выполняются в этом порядке, один раз. Альфа не перераспределяется между ними.
+hypotheses:
+  - id: H1_random
+    role: primary
+    statement: "Модель охватывает больше объектов на 20% площади, чем случайное ранжирование"
+    test: exact_binomial_one_sided
+    null_capture: 0.20
+    alpha: 0.05
+  - id: H2_heuristic
+    role: secondary
+    statement: "Модель охватывает больше объектов на 20% площади, чем эвристика по интрузиям"
+    test: exact_mcnemar_one_sided
+    alpha: 0.05
+    low_power: true                 # при 17 объектах незначимость не означает «не хуже» и «хуже»
+  - id: R70_reference
+    role: reference
+    statement: "Нижняя граница exact 95% захвата на 20% площади не ниже 0,70"
+    threshold: 0.70
+  - id: D_usgs
+    role: descriptive
+    statement: "Захват модели и трактов USGS 2010 при площади трактов внутри теста"
+
+ties:
+  model: expected_capture           # ожидаемый захват на границе равных scores
+  hypothesis_tests: conservative    # в H1/H2 объект засчитывается модели при вероятности попадания 1, эвристике — при любой ненулевой
