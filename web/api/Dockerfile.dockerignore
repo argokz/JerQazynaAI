@@ -1,0 +1,11 @@
+# Контекст сборки — корень репозитория; в образ попадают только код и метаданные пакета.
+*
+!pyproject.toml
+!README.md
+!requirements/py310-geo.txt
+!requirements/py310-web.txt
+!src/
+!web/api/
+**/__pycache__
+**/*.egg-info
+web/api/Dockerfile*

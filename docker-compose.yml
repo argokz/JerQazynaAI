@@ -1,5 +1,6 @@
 # Минимальная инфраструктура исследовательской фазы: метаданные, растры, реестр моделей.
-# FastAPI, очередь задач, TiTiler и интерфейс подключаются после контрольной точки 3.
+# Веб-карта (профиль web): TiTiler, API и статика фронтенда; см. docs/WEB_MAP.md.
+# Запуск только веб-карты: docker compose --profile web up titiler api frontend
 services:
   postgis:
     image: postgis/postgis:16-3.4
@@ -27,6 +28,49 @@ services:
       --artifacts-destination /mlflow/artifacts
     ports: ["5000:5000"]
     volumes: [mlflowdata:/mlflow]
+
+  # Тайлы из COG; видит только data/web/cogs (маска области и манифест туда не входят).
+  titiler:
+    profiles: [web]
+    image: ghcr.io/developmentseed/titiler:2.4.0
+    command: uvicorn titiler.application.main:app --host 0.0.0.0 --port 8000 --workers 2
+    environment:
+      TITILER_API_CORS_ORIGINS: ${WEB_ORIGIN:-http://localhost:8080},http://localhost:5173
+      TITILER_API_DISABLE_STAC: "true"
+      TITILER_API_DISABLE_MOSAIC: "true"
+      TITILER_API_DISABLE_ZARR: "true"
+      GDAL_DISABLE_READDIR_ON_OPEN: EMPTY_DIR
+      GDAL_CACHEMAX: "256"
+      CPL_VSIL_CURL_ALLOWED_EXTENSIONS: .tif
+    ports: ["127.0.0.1:8001:8000"]   # без белого списка url TiTiler наружу не открывать
+    volumes: ["./data/web/cogs:/data/cogs:ro"]
+
+  api:
+    profiles: [web]
+    build:
+      context: .
+      dockerfile: web/api/Dockerfile
+    environment:
+      JERQAZYNA_WEB_DATA_DIR: /data/web
+      JERQAZYNA_WEB_REGISTRY: /app/web/layers.yaml
+      JERQAZYNA_WEB_SOURCES: /app/configs/sources.yaml
+      JERQAZYNA_WEB_TILES_URL: ${TILES_PUBLIC_URL:-http://localhost:8001}
+      JERQAZYNA_WEB_TILES_DATA_DIR: /data/cogs
+      JERQAZYNA_WEB_CORS_ORIGINS: ${WEB_ORIGIN:-http://localhost:8080},http://localhost:5173
+    ports: ["127.0.0.1:8000:8000"]
+    volumes:
+      - ./data/web:/data/web:ro
+      - ./web/layers.yaml:/app/web/layers.yaml:ro
+      - ./configs/sources.yaml:/app/configs/sources.yaml:ro
+
+  frontend:
+    profiles: [web]
+    build:
+      context: web/frontend
+      args:
+        VITE_API_URL: ${API_PUBLIC_URL:-http://localhost:8000}
+    ports: ["127.0.0.1:8080:80"]
+    depends_on: [api, titiler]
 
 volumes:
   pgdata:

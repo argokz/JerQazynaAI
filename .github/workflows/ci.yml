@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: "3.10"
       - run: pip install -e ".[dev]"
-      - run: ruff check src tests
+      - run: ruff check src tests web
       - run: pytest -q
 
   baseline-test:
@@ -38,6 +38,27 @@ jobs:
       - run: pip install -c requirements/py310-geo.txt -e ".[geo,dev]"
       - run: python -c "import rasterio, geopandas, pyogrio, openpyxl"
       - run: pytest -q
+
+  web-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install -c requirements/py310-web.txt -e ".[geo,web,dev]"
+      - run: python -c "import fastapi, httpx, uvicorn, rasterio"
+      - run: ruff check web tests/web
+      - run: pytest -q tests/web
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: web/frontend
+      - run: npm run build
+        working-directory: web/frontend
 
   emit-test:
     runs-on: windows-latest

@@ -1,0 +1,94 @@
+:root {
+  --bg: #f6f6f4;
+  --panel: #ffffff;
+  --text: #1d1d1b;
+  --muted: #6b6b66;
+  --border: #deded8;
+  --accent: #1f6f8b;
+  --warn-bg: #fff4e0;
+  --warn-text: #7a4a00;
+  --error: #a3261b;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161716;
+    --panel: #212321;
+    --text: #e8e8e4;
+    --muted: #a0a09a;
+    --border: #3a3c39;
+    --accent: #6fb6cf;
+    --warn-bg: #3a2c12;
+    --warn-text: #f3cf8f;
+    --error: #ff8a7d;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: var(--bg); }
+h1 { font-size: 20px; margin: 0 0 4px; }
+h2 { font-size: 15px; margin: 0 0 8px; }
+h3 { font-size: 13px; margin: 10px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+.app { display: flex; height: 100%; }
+.sidebar {
+  width: 380px; max-width: 100%; overflow-y: auto; padding: 12px;
+  border-right: 1px solid var(--border); background: var(--bg);
+}
+.map-wrap { flex: 1; position: relative; min-height: 320px; }
+.map { position: absolute; inset: 0; }
+
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 10px 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; }
+.muted { color: var(--muted); }
+.error { color: var(--error); }
+.warning { background: var(--warn-bg); color: var(--warn-text); padding: 4px 6px; border-radius: 4px; font-size: 12px; margin: 4px 0; }
+.notice { font-size: 12px; font-style: italic; }
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; }
+.badge { display: inline-block; margin-left: 6px; padding: 0 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 11px; color: var(--muted); }
+.badge-warn { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; }
+.link { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; font: inherit; }
+
+.layer { padding: 6px 0; border-bottom: 1px solid var(--border); }
+.layer:last-child { border-bottom: none; }
+.layer-off { opacity: 0.6; }
+.layer-title { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; }
+.layer-desc { margin: 2px 0 0 22px; font-size: 12px; color: var(--muted); }
+.layer .warning, .layer > .muted { margin-left: 22px; }
+.layer-meta { display: flex; align-items: center; gap: 8px; margin-left: 22px; font-size: 12px; }
+.layer-meta input[type="range"] { width: 140px; }
+
+.legend { margin-bottom: 10px; }
+.legend-title { font-weight: 500; margin-bottom: 4px; }
+.legend-bar { height: 12px; border-radius: 3px; border: 1px solid var(--border); }
+.legend-range { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.legend-classes { list-style: none; padding: 0; margin: 0; }
+.swatch { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: middle; border: 1px solid var(--border); }
+
+.cell-head { margin: 0 0 6px; }
+.cell-table { width: 100%; border-collapse: collapse; }
+.cell-table td { padding: 3px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cell-table .value { text-align: right; white-space: nowrap; padding-left: 8px; font-variant-numeric: tabular-nums; }
+.provenance { margin: 4px 0; }
+.provenance summary { cursor: pointer; }
+.provenance dl { display: grid; grid-template-columns: 110px 1fr; gap: 2px 8px; margin: 6px 0; font-size: 12px; }
+.provenance dt { color: var(--muted); }
+.provenance dd { margin: 0; }
+
+.sources { list-style: none; padding: 0; margin: 0; }
+.sources li { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.sources li:last-child { border-bottom: none; }
+.source-title { font-weight: 500; font-size: 13px; }
+
+.fatal { padding: 24px 16px; max-width: 640px; }
+
+@media (max-width: 760px) {
+  .app { flex-direction: column-reverse; }
+  .sidebar { width: 100%; border-right: none; border-top: 1px solid var(--border); max-height: 55vh; }
+  .map-wrap { flex: none; height: 45vh; }
+}

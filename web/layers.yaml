@@ -1,0 +1,153 @@
+# Реестр слоёв веб-карты. Код путей к файлам не знает: новый слой добавляется здесь,
+# затем `python web/scripts/export_cogs.py --only <id>`.
+#
+# Поля слоя:
+#   id          — латиница и _, имя COG в data/web/cogs/<id>.tif
+#   file, band  — исходный растр на сетке задачи (относительно корня проекта) и канал
+#   role        — feature (исходный признак), mask (маска), research (модельный растр:
+#                 скрыт по умолчанию, обязателен warning)
+#   sources     — id из configs/sources.yaml: оттуда берутся лицензия и цитата
+#   provenance  — манифест подготовки, где записан sha256 исходника; экспорт сверяет хеш
+#   display     — палитра TiTiler (colormap_name), диапазон, прозрачность, обзоры COG
+#
+# Лицензионные правила (docs/DATA_LICENSES_2026-11-05.md) проверяются при загрузке:
+# usgs_fsu_geology и geoboundaries показывать нельзя; слои CC BY-SA — только отдельно,
+# с одним источником; у каждого источника должна быть формула атрибуции ниже.
+version: 1
+task_id: porphyry_cu_balkhash
+grid: data/features/porphyry_cu_balkhash/grid.json
+
+area:
+  file: data/features/porphyry_cu_balkhash/area_mask.tif
+  provenance: {manifest: data/features/porphyry_cu_balkhash/area.json, key: mask_sha256}
+
+attributions:
+  cop_dem_glo90:
+    # Формула лицензии Copernicus DEM для производных продуктов GLO-90; сверить с PDF лицензии.
+    text: >-
+      Produced using Copernicus WorldDEM-90 © DLR e.V. 2010-2014 and © Airbus Defence and
+      Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA;
+      all rights reserved
+    notice: >-
+      The organisations in charge of the Copernicus programme by law or by delegation do not
+      incur any liability for any use of the Copernicus WorldDEM-90.
+  emag2v3:
+    text: "EMAG2v3, NOAA NCEI (Meyer, Saltus, Chulliat, 2017), doi:10.7289/V5H70CVX"
+  ggmplus_dg:
+    text: "GGMplus, Curtin University (Hirt et al., 2013), doi:10.1002/grl.50838"
+    notice: >-
+      Лицензия не указана: показ для исследования и внутренних демонстраций с цитированием;
+      коммерческое использование — после письменного разрешения Curtin University.
+  glim:
+    text: "GLiM (Hartmann, Moosdorf, 2012), doi:10.1029/2012GC004370"
+    notice: >-
+      Лицензия ГИС-архива не указана: показ для исследования и внутренних демонстраций
+      с цитированием; коммерческое использование — после письменного разрешения авторов.
+  gem_active_faults:
+    text: >-
+      GEM Global Active Faults Database (Styron, Pagani, 2020), CC BY-SA 4.0;
+      изменено: расстояние до разломов на сетке 1 км
+    notice: "Производный растр распространяется под CC BY-SA 4.0."
+  mining_polygons_v2:
+    text: >-
+      Global-scale mining polygons v2 (Maus et al., 2022), PANGAEA, CC BY-SA 4.0;
+      изменено: растеризация на сетку 1 км
+    notice: "Производный растр распространяется под CC BY-SA 4.0."
+  usgs_porphyry_2025:
+    text: "USGS, глобальная база порфировых месторождений (Magnin et al., 2025), doi:10.5066/P14CCESQ"
+
+layers:
+  - id: dem_elevation
+    title: Высота рельефа
+    description: Средняя высота Copernicus DEM GLO-90 в ячейке 1 км.
+    file: data/features/porphyry_cu_balkhash/dem__elevation_m.tif
+    units: м
+    group: Рельеф
+    sources: [cop_dem_glo90]
+    provenance: {manifest: data/features/porphyry_cu_balkhash/cache.json}
+    display: {palette: terrain, min: -200, max: 4500, visible: true, opacity: 0.7}
+
+  - id: magnetics_anomaly
+    title: Магнитная аномалия
+    description: EMAG2v3, пересчёт вверх на 4 км, на сетке 1 км.
+    file: data/features/porphyry_cu_balkhash/magnetics__anomaly_nt.tif
+    units: нТл
+    group: Геофизика
+    sources: [emag2v3]
+    provenance: {manifest: data/features/porphyry_cu_balkhash/cache.json}
+    display: {palette: rdbu_r, min: -250, max: 250}
+
+  - id: gravity_bouguer
+    title: Аномалия Буге
+    description: Простая аномалия Буге из гравитационных возмущений GGMplus с поправкой за слой по DEM.
+    file: data/features/porphyry_cu_balkhash/gravity__bouguer_mgal.tif
+    units: мГал
+    group: Геофизика
+    sources: [ggmplus_dg, cop_dem_glo90]
+    provenance: {manifest: data/features/porphyry_cu_balkhash/cache.json}
+    display: {palette: viridis, min: -400, max: 0}
+
+  - id: lithology_distance
+    title: Расстояние до кислых и средних интрузий
+    description: Расстояние до полигонов GLiM классов pa и pi (кислые и средние плутонические породы).
+    file: data/features/porphyry_cu_balkhash/lithology__distance_km.tif
+    units: км
+    group: Геология
+    sources: [glim]
+    provenance: {manifest: data/features/porphyry_cu_balkhash/cache.json}
+    display: {palette: viridis_r, min: 0, max: 200}
+
+  # Слои CC BY-SA: отдельно, с одним источником. В модель baseline не входят; растры
+  # подготовлены прежним поколением кэша, поэтому происхождение подтверждается только sha256.
+  - id: faults_active_distance
+    title: Расстояние до активных разломов
+    description: Расстояние до трасс GEM Global Active Faults.
+    file: data/features/porphyry_cu_balkhash/faults_active__distance_km.tif
+    units: км
+    group: Геология
+    sources: [gem_active_faults]
+    display: {palette: viridis_r, min: 0, max: 500}
+
+  - id: mine_mask
+    title: Горные выработки
+    description: Ячейки с карьерами, отвалами и хвостохранилищами (Maus et al., 2022) и буфером вокруг них.
+    file: data/features/porphyry_cu_balkhash/mine_mask__mask.tif
+    role: mask
+    group: Маски
+    sources: [mining_polygons_v2]
+    display:
+      palette: reds
+      min: 0
+      max: 1
+      nodata: 0
+      resampling: nearest
+      classes: [{value: 1, label: Выработки}]
+
+  # Модельные растры: исследовательские, скрыты по умолчанию.
+  - id: research_train_score
+    title: Балл модели baseline (train)
+    description: >-
+      Относительный балл positive/background итоговой модели ce67b6ff на территории обучения;
+      тестовый регион и буфер — NaN.
+    file: outputs/porphyry_cu_balkhash/porphyry_cu_baseline/ce67b6ff52175829/train_score.tif
+    role: research
+    group: Исследование
+    sources: [cop_dem_glo90, emag2v3, ggmplus_dg, glim, usgs_porphyry_2025]
+    provenance:
+      manifest: outputs/porphyry_cu_balkhash/porphyry_cu_baseline/ce67b6ff52175829/run.json
+    warning: &blind_warning >-
+      Исследовательский; не прошёл слепой тест 05.11.2026 (вердикт not_transferred,
+      docs/BLIND_RESULT_2026-11-05.md). Относительный балл, не вероятность и не перспективность.
+    display: {palette: magma, min: 0, max: 1}
+
+  - id: research_test_score
+    title: Балл модели baseline (Прибалхашье)
+    description: Балл зафиксированной модели в регионе слепого теста.
+    file: outputs/porphyry_cu_balkhash/blind/blind_balkhash_2026-11-05/test_score.tif
+    role: research
+    group: Исследование
+    sources: [cop_dem_glo90, emag2v3, ggmplus_dg, glim, usgs_porphyry_2025]
+    provenance:
+      manifest: outputs/porphyry_cu_balkhash/blind/blind_balkhash_2026-11-05/report.json
+    warning: *blind_warning
+    display: {palette: magma, min: 0, max: 1}

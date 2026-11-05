@@ -35,3 +35,9 @@ outputs/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Веб-карта: зависимости и сборка фронтенда
+node_modules/
+web/frontend/dist/
+web/frontend/.env
+web/frontend/.env.local
