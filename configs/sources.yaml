@@ -46,8 +46,28 @@ sources:
     citation: "Magnin, Graham, Huston, Eglington, 2025, https://doi.org/10.5066/P14CCESQ"
     page: "https://doi.org/10.5066/P14CCESQ"
     expect: ["*.xlsx", "*.csv"]
-    notes: "ScienceBase (и его API) закрыт проверкой Cloudflare, зеркал нет: открыть DOI в браузере,
-      скачать таблицу в папку источника. Пока используются 41 объект из usgs_sir2010_5090n."
+    notes: "Если ScienceBase недоступен, открыть DOI в браузере и скачать таблицу в папку источника.
+      Локально на 2026-10-19 таблица уже собрана и используется как основной источник меток;
+      пакет 2010-N дополняет её проспектами и статусами."
+
+  - id: usgs_sir2010_5090x
+    title: "USGS SIR 2010-5090-X: порфировая медь CAOB и Восточного Тетиса"
+    roles: [labels, benchmark]
+    access: direct
+    license: "Public domain (USGS); учитывать метаданные исходных компонентов"
+    citation: "Ludington et al., 2015, https://doi.org/10.3133/sir20105090X"
+    size_mb: 14.1
+    files:
+      - url: "https://pubs.usgs.gov/sir/2010/5090/x/SIR2010-5090-X_Appendix_B.xlsx"
+        filename: SIR2010-5090-X_Appendix_B.xlsx
+      - url: "https://pubs.usgs.gov/sir/2010/5090/x/SIR2010-5090-X_database.zip"
+        filename: SIR2010-5090-X_database.zip
+        unzip: true
+    notes: "Проверено скачиванием 2026-10-19. В ГИС 288 объектов; в текущей области 31,
+      все совпадают с существующими метками в радиусе 5 км. Полезен для заполнения статусов
+      и происхождения данных, а не как 31 новый объект. Перед merge нормализовать
+      prospect, significant и проверить типы Cu/skarn. Зоны tracts — только benchmark.
+      Исследование и ограничения: docs/DATA_SOURCES_2026-10-19.md."
 
   - id: usgs_mrds
     title: "USGS Mineral Resources Data System (MRDS)"

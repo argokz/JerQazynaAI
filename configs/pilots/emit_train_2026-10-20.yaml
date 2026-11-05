@@ -1,0 +1,15 @@
+pilot_id: emit_train_2026-10-20
+task: configs/tasks/porphyry_cu_balkhash.yaml
+baseline: outputs/porphyry_cu_balkhash/porphyry_cu_baseline/ce67b6ff52175829
+split: data/features/porphyry_cu_balkhash/splits/4c6107e6c0a9f029
+start: '2022-08-09'
+end: '2026-10-19'
+months: [6, 7, 8, 9]
+dates_per_area: 2
+scenes_per_date: 3
+budget_bytes: 10737418240
+areas:
+  - name: central_kazakhstan
+    bbox: [66, 47, 67, 48]
+  - name: western_tien_shan
+    bbox: [70.5, 41.5, 71.5, 42.5]

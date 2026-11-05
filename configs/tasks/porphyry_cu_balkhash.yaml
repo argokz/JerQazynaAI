@@ -36,6 +36,15 @@ labels:
       layer: Central_Asia_deposits_prospects
       name_field: Name
       status_field: SiteStatus
+    # Аудит 19.10.2026: 31 совпадение <1 м, новых точек не добавляем.
+    - source: data/raw/usgs_sir2010_5090x/SIR2010-5090-X_database/SIR2010-5090-X_database/142pCu_CAOB_Tethys.gdb
+      layer: mineral_sites_142pCu_CAOB_Tethys
+      name_field: Name
+      status_field: SiteStatus
+      type_field: Depo_Type
+      type_regex: "^Porphyry Cu"
+      match_radius_m: 1
+      add_unmatched: false
   merge_radius_m: 5000
   include_prospects: true
   mine_mask_buffer_m: 3000   # маска карьеров и отвалов для спектральных признаков
@@ -123,7 +132,8 @@ model:
 validation:
   blind_region:
     name: Прибалхашье
-    geometry: configs/regions/balkhash_blind.geojson   # зафиксировать до первого обучения
+    geometry: configs/regions/balkhash_blind.geojson
+    provisional: true             # рамка выбрана до обучения; геологическая граница не утверждена
     buffer_m: 20000
   spatial_block_size_m: 50000
   area_fractions: [0.05, 0.10, 0.20]

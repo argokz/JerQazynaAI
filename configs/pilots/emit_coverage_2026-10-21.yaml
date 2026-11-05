@@ -1,0 +1,12 @@
+assessment_id: emit_coverage_2026-10-21
+pilot: configs/pilots/emit_train_2026-10-20.yaml
+country_audit: data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7
+tile_degrees: 1.0
+boundary_subdivisions: 3
+minimum_positive_per_fold: 5
+minimum_blocks_per_fold: 2
+minimum_usable_fraction: 0.5
+minimum_usable_dates: 2
+max_tiles: 16
+transfer_reserve_fraction: 0.25
+transfer_fixed_reserve_bytes: 268435456

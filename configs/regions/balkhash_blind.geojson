@@ -1,0 +1,19 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Прибалхашье — предварительная рамка",
+        "provisional": true,
+        "selected_on": "2026-10-19",
+        "source": "Рамка priority_bbox из configs/sources.yaml; выбрана пользователем до первого обучения",
+        "limitation": "Техническая рамка для предварительной проверки; геологическая граница не утверждена"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[72.0, 44.5], [80.0, 44.5], [80.0, 48.5], [72.0, 48.5], [72.0, 44.5]]]
+      }
+    }
+  ]
+}

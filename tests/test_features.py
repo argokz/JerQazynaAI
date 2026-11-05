@@ -232,6 +232,63 @@ def test_merge_labels_adds_far_and_takes_status_from_near():
     assert merged.status.tolist() == ["deposit", "", "prospect"]
 
 
+def test_merge_labels_normalizes_status_and_can_disable_new_objects():
+    from jerqazyna.features.prepare import merge_labels
+
+    primary = gpd.GeoDataFrame(
+        {"name": ["unnamed", "unnamed"], "status": [np.nan, ""], "source": "new"},
+        geometry=gpd.points_from_xy([0, 100_000], [0, 0]), crs=CRS,
+    )
+    extra = gpd.GeoDataFrame(
+        {"name": ["first", "far"], "status": [" prospect, significant ", "deposit"],
+         "source": "old"},
+        geometry=gpd.points_from_xy([.1, 50_000], [0, 0]), crs=CRS,
+    )
+    merged, same, added = merge_labels(primary, extra, radius_m=1, add_unmatched=False)
+    assert (same, added, len(merged)) == (1, 0, 2)
+    assert merged.status.tolist() == ["prospect", ""]
+    assert merged.status_raw.iloc[0] == " prospect, significant "
+    assert merged.status_source.iloc[0] == "old"
+    assert json.loads(merged.aliases.iloc[0]) == ["unnamed", "first"]
+
+
+def test_significant_prospects_excluded_from_deposit_only_table(tmp_path):
+    import pandas as pd
+
+    from jerqazyna.features.prepare import build_labels
+
+    source = tmp_path / "input.csv"
+    pd.DataFrame({"Name": ["A", "B"], "SiteStatus": ["deposit", "prospect, significant"],
+                  "lon": [70.5, 70.6], "lat": [46.5, 46.6]}).to_csv(source, index=False)
+    grid = GridSpec.from_bounds(CRS, 5000, (-100_000, 0, 200_000, 300_000))
+    task = TaskConfig.model_validate({
+        "task_id": "t", "deposit_type": "t",
+        "labels": {"source": str(source), "include_prospects": False},
+        "layers": [{"name": "x", "group": "terrain", "source": "x", "kind": "dem"}],
+        "validation": {"blind_region": {"name": "x", "geometry": "x"}},
+    })
+    result = build_labels(tmp_path, task, grid, np.ones(grid.shape, bool), tmp_path,
+                          log=lambda *_: None)
+    assert result.name.tolist() == ["A"]
+
+
+def test_labels_from_xlsx(tmp_path):
+    import pandas as pd
+
+    pytest.importorskip("openpyxl")
+    from jerqazyna.config import LabelSource
+    from jerqazyna.features.prepare import load_label_source
+
+    path = tmp_path / "input.xlsx"
+    pd.DataFrame({"Name": ["A"], "SiteStatus": ["prospect, significant"],
+                  "lon": [70.5], "lat": [46.5]}).to_excel(path, index=False)
+    grid = GridSpec.from_bounds(CRS, 5000, (-100_000, 0, 200_000, 300_000))
+    table = load_label_source(tmp_path, LabelSource(source="input.xlsx"), grid)
+    assert table.status.tolist() == ["prospect"]
+    assert table.status_raw.tolist() == ["prospect, significant"]
+    assert json.loads(table.source_records.iloc[0])[0]["source"] == "input.xlsx"
+
+
 @pytest.mark.parametrize("offset_px", [0, 3, 45])
 def test_fast_aligned_path_matches_reprojection(grid, offset_px):
     rng = np.random.default_rng(offset_px)

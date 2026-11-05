@@ -1,0 +1,588 @@
+review_id: train_review_2026-10-20
+decisions:
+- decision_id: unknown-243
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '243'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 243 (0-based), DEPOSIT=Birgildinskoe (Birgildinsky); no
+      pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=Mudd
+      and Jowitt (2018); COMMENTS=Grade-tonnage are code noncompliant resources..
+      В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужен датированный первичный документ по Биргильдинскому участку и его стадия
+    разведки; ресурсная запись Mudd/Jowitt не задаёт SiteStatus.
+  status_as_of: null
+- decision_id: unknown-447
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '447'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 447 (0-based), DEPOSIT=Chontash; no pagination
+    finding: LOCATION_REF=S&P Global (2024); G-T_REF=Chaarat Gold Holdings (2011);
+      COMMENTS=Grade-tonnage are maiden resource estimate for porphyry mineralization.
+      The deposit also has a significant REE resource (0.365 Mt at 0.232%).. В таблице
+      отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужен исходный отчёт Chaarat Gold Holdings 2011 с идентификацией Chontash
+    и датой стадии; S&P Global 2024 — ссылка на закрытую базу, не проверенный открытый
+    статус.
+  status_as_of: null
+- decision_id: unknown-615
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '615'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 615 (0-based), DEPOSIT=Dunguray; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: В исходной записи нет G-T_REF и SiteStatus; требуется запись Dunguray из
+    Dicken 2016 с первичной ссылкой на стадию.
+  status_as_of: null
+- decision_id: unknown-972
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '972'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 972 (0-based), DEPOSIT=Kalinovskoe; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужно отличить самостоятельное Kalinovskoe от Калиновского участка Томинского
+    месторождения и подтвердить стадию на дату документа.
+  status_as_of: null
+- decision_id: unknown-973
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '973'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 973 (0-based), DEPOSIT=Kalmakyr (Almalyk district); no pagination
+    finding: LOCATION_REF=Sinclair (2007); G-T_REF=Zhao and others (2017); COMMENTS=Grade-tonnage
+      resources and reserves at 0.2% Cu cutoff.. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Не разрешён конфликт координат с заявленной страной; сначала идентифицировать
+    отдельный Kalmakyr, затем подтвердить его стадию датированным первоисточником.
+  status_as_of: null
+- decision_id: unknown-1079
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1079'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1079 (0-based), DEPOSIT=Klochkovka; no pagination
+    finding: LOCATION_REF=Wu and others (2022); G-T_REF=Wu and others (2022) and references
+      therein; COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужно раскрыть первичную ссылку Wu 2022 для Klochkovka и её датированный
+    статус; сама компиляция и тоннаж не заменяют SiteStatus.
+  status_as_of: null
+- decision_id: unknown-1370
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1370'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1370 (0-based), DEPOSIT=Mikheevskoe (Mikheev, Mikheevka,
+      Mikheevskoye); no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=Mudd
+      and Jowitt (2018); COMMENTS=Cited age is weighted mean of two molybdenite Re-Os
+      ages (357.8 ± 1.8 and 356.1 ± 1.4 Ma). Grade-tonnage are code compliant resources..
+      В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужен датированный документ оператора или лицензии с идентификацией Михеевского
+    и связью с этой записью; код ресурсов в COMMENTS не означает проверенный статус.
+  status_as_of: null
+- decision_id: unknown-1405
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1405'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1405 (0-based), DEPOSIT=Molybdenum/Copper Property; no pagination
+    finding: LOCATION_REF=S&P Global (2024); G-T_REF=Centrasia Mining (2006); COMMENTS=Grade-tonnage
+      are not NI 43-101 compliant. Based on 0.05% Mo cut-off. The deposit is a porphyry
+      molybdenum-copper with associated skarn mineralization.. В таблице отсутствует
+      поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Обобщённое имя Molybdenum/Copper Property не даёт устойчивой идентичности;
+    нужен отчёт Centrasia Mining 2006 с названием участка, координатами и стадией.
+  status_as_of: null
+- decision_id: unknown-1489
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1489'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1489 (0-based), DEPOSIT=Novonikolaevsk (Novonikolaevskoe);
+      no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужно установить самостоятельность Novonikolaevsk относительно соседнего
+    Михеевского и найти датированный документ по конкретному участку; G-T_REF пуст.
+  status_as_of: null
+- decision_id: unknown-1768
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1768'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1768 (0-based), DEPOSIT=Salavat; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=Mudd
+      and Jowitt (2018); COMMENTS=Grade-tonnage are code noncompliant resources..
+      В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Ресурсы отмечены как noncompliant; нужен первичный документ по Salavat со
+    стадией и датой, а не вывод из тоннажа.
+  status_as_of: null
+- decision_id: unknown-1774
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1774'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1774 (0-based), DEPOSIT=Samarskoye; no pagination
+    finding: LOCATION_REF=Sinclair (2007); G-T_REF=Sinclair (2007); COMMENTS=. В таблице
+      отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Для Samarskoye обе ссылки указывают Sinclair 2007; нужно получить соответствующее
+    приложение с записью и датированным статусом.
+  status_as_of: null
+- decision_id: unknown-1842
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1842'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1842 (0-based), DEPOSIT=Severniy; no pagination
+    finding: LOCATION_REF=Mindat (2000); G-T_REF=Mudd and Jowitt (2018); COMMENTS=Location
+      is estimated based on nearby localities or region boundaries. Grade-tonnage
+      are code noncompliant resources.. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: COMMENTS прямо предупреждает об оценочной локализации по соседним объектам/границам;
+    требуется независимая идентификация Severniy и документ о стадии.
+  status_as_of: null
+- decision_id: unknown-1921
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '1921'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 1921 (0-based), DEPOSIT=Soyusnoe; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нет G-T_REF/SiteStatus; нужен исходный документ для Soyusnoe из цепочки
+    Dicken 2016 и дата состояния работ.
+  status_as_of: null
+- decision_id: unknown-2028
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2028'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2028 (0-based), DEPOSIT=Tarutinskoye; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=Mudd
+      and Jowitt (2018); COMMENTS=Grade-tonnage are code compliant resources and reserves..
+      В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нужно различить Tarutinskoye и объекты с названием Северо-Тарутинское по
+    лицензии/плану; code compliant ресурсы и запасы не задают дату стадии этой точки.
+  status_as_of: null
+- decision_id: unknown-2087
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2087'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2087 (0-based), DEPOSIT=Tominskoe (Tominskoye); no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=Mudd
+      and Jowitt (2018); COMMENTS=Location provided by Dicken and others (2016) and
+      references therein corrected to the associated pit in Google Earth. Grade-tonnage
+      are code compliant resources.. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: COMMENTS описывает перенос точки к карьеру по Google Earth; нужен датированный
+    документ по Tominskoe и проверка идентичности исправленной локализации.
+  status_as_of: null
+- decision_id: unknown-2256
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2256'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2256 (0-based), DEPOSIT=Voznesenskoe; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нет G-T_REF; нужно установить именно порфировый объект Voznesenskoe, исключить
+    одноимённые рудопроявления и найти датированный статус.
+  status_as_of: null
+- decision_id: unknown-2319
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2319'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2319 (0-based), DEPOSIT=Yaguzak; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нет G-T_REF/SiteStatus; требуется первичный документ по Yaguzak из Dicken
+    2016, статус соседних объектов переносить нельзя.
+  status_as_of: null
+- decision_id: unknown-2333
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2333'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2333 (0-based), DEPOSIT=Yelenevskoe; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нет G-T_REF/SiteStatus; требуется первичная запись Yelenevskoe с устойчивым
+    идентификатором и датой стадии.
+  status_as_of: null
+- decision_id: unknown-2347
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2347'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2347 (0-based), DEPOSIT=Yubileinoe (Yubileinoye); no pagination
+    finding: LOCATION_REF=see comments; G-T_REF=Wu and others (2022) and references
+      therein; COMMENTS=Dicken and others (2016) and references therein coordinates
+      are ~2.5 km north of the actual mine on google earth. Cited coordinates are
+      from the pit location in Google Earth.. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: COMMENTS сообщает ручной перенос на 2.5 км к карьеру; требуется проверить
+    идентичность конкретного Yubileinoe и связать точку с датированной лицензией/отчётом.
+  status_as_of: null
+- decision_id: unknown-2365
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '2365'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: unknown
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 2365 (0-based), DEPOSIT=Zelenodolskoe; no pagination
+    finding: LOCATION_REF=Dicken and others (2016) and references therein; G-T_REF=;
+      COMMENTS=. В таблице отсутствует поле SiteStatus.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  reason: Нет G-T_REF/SiteStatus; нужен первичный документ Zelenodolskoe из Dicken
+    2016 с датой стадии.
+  status_as_of: null
+- decision_id: country-0
+  record:
+    source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    layer: Central_Asia_deposits_prospects
+    row: '0'
+    sha256: 783522e4cd8c3ec2a31ca238735f9f4ff58934b2f4bf0c1faa36599fb97a75af
+  state: confirmed
+  before:
+    country: null
+    country_iso: null
+  changes:
+    country: Kyrgyzstan
+    country_iso: KGZ
+  evidence:
+  - uri: local:data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7/labels_audit.csv
+    locator: CSV row with name=Kuru Tegerek; no pagination
+    finding: country_candidates=KGZ; unique country from point-in-polygon, existing
+      lon/lat unchanged.
+    sha256: 3d0df52484df94065f4b4a44abf0f5f8136433ef56250ca7ba27916ed2d44050
+  - uri: local:data/raw/geoboundaries/geoBoundaries-KGZ-ADM0.geojson
+    locator: ADM0 polygon; no pagination
+    finding: Geometry source used for derived country only; not independent coordinate
+      verification.
+    sha256: a351671d0b922acca947522284384f3e29c4039e738e60b5d71cd31321c1d8f3
+  reason: Производная страна по геометрии единственного полигона ADM0. Это не независимая
+    проверка точности координат.
+  status_as_of: null
+- decision_id: country-3
+  record:
+    source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    layer: Central_Asia_deposits_prospects
+    row: '3'
+    sha256: 783522e4cd8c3ec2a31ca238735f9f4ff58934b2f4bf0c1faa36599fb97a75af
+  state: confirmed
+  before:
+    country: null
+    country_iso: null
+  changes:
+    country: Kyrgyzstan
+    country_iso: KGZ
+  evidence:
+  - uri: local:data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7/labels_audit.csv
+    locator: CSV row with name=Bozymchak; no pagination
+    finding: country_candidates=KGZ; unique country from point-in-polygon, existing
+      lon/lat unchanged.
+    sha256: 3d0df52484df94065f4b4a44abf0f5f8136433ef56250ca7ba27916ed2d44050
+  - uri: local:data/raw/geoboundaries/geoBoundaries-KGZ-ADM0.geojson
+    locator: ADM0 polygon; no pagination
+    finding: Geometry source used for derived country only; not independent coordinate
+      verification.
+    sha256: a351671d0b922acca947522284384f3e29c4039e738e60b5d71cd31321c1d8f3
+  reason: Производная страна по геометрии единственного полигона ADM0. Это не независимая
+    проверка точности координат.
+  status_as_of: null
+- decision_id: country-7
+  record:
+    source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    layer: Central_Asia_deposits_prospects
+    row: '7'
+    sha256: 783522e4cd8c3ec2a31ca238735f9f4ff58934b2f4bf0c1faa36599fb97a75af
+  state: confirmed
+  before:
+    country: null
+    country_iso: null
+  changes:
+    country: Kyrgyzstan
+    country_iso: KGZ
+  evidence:
+  - uri: local:data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7/labels_audit.csv
+    locator: CSV row with name=Aktash; no pagination
+    finding: country_candidates=KGZ; unique country from point-in-polygon, existing
+      lon/lat unchanged.
+    sha256: 3d0df52484df94065f4b4a44abf0f5f8136433ef56250ca7ba27916ed2d44050
+  - uri: local:data/raw/geoboundaries/geoBoundaries-KGZ-ADM0.geojson
+    locator: ADM0 polygon; no pagination
+    finding: Geometry source used for derived country only; not independent coordinate
+      verification.
+    sha256: a351671d0b922acca947522284384f3e29c4039e738e60b5d71cd31321c1d8f3
+  reason: Производная страна по геометрии единственного полигона ADM0. Это не независимая
+    проверка точности координат.
+  status_as_of: null
+- decision_id: country-35
+  record:
+    source: data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    layer: Central_Asia_deposits_prospects
+    row: '35'
+    sha256: 783522e4cd8c3ec2a31ca238735f9f4ff58934b2f4bf0c1faa36599fb97a75af
+  state: confirmed
+  before:
+    country: null
+    country_iso: null
+  changes:
+    country: Kazakhstan
+    country_iso: KAZ
+  evidence:
+  - uri: local:data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7/labels_audit.csv
+    locator: CSV row with name=Benkala South; no pagination
+    finding: country_candidates=KAZ; unique country from point-in-polygon, existing
+      lon/lat unchanged.
+    sha256: 3d0df52484df94065f4b4a44abf0f5f8136433ef56250ca7ba27916ed2d44050
+  - uri: local:data/raw/geoboundaries/geoBoundaries-KAZ-ADM0.geojson
+    locator: ADM0 polygon; no pagination
+    finding: Geometry source used for derived country only; not independent coordinate
+      verification.
+    sha256: 244f11881bcbfcfc58f74e53db89f844f033d090a9d087b888a90688561a7107
+  reason: Производная страна по геометрии единственного полигона ADM0. Это не независимая
+    проверка точности координат.
+  status_as_of: null
+- decision_id: identity-220
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '220'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: deposit
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 220 (0-based); no pagination
+    finding: 'Исходное название: Benkala (Benqala)'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  - uri: local:data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    locator: layer=Central_Asia_deposits_prospects, row=34 (0-based); no pagination
+    finding: 'Донор статуса: Benkala North; status_raw=deposit'
+    sha256: 783522e4cd8c3ec2a31ca238735f9f4ff58934b2f4bf0c1faa36599fb97a75af
+  reason: Benkala и Benkala North разделены примерно 1511 м; нужна первичная карта/лицензия
+    с однозначным соответствием северному объекту. Радиус слияния 5 км не доказательство.
+    Существующее значение сохраняется, подтверждённой правки пока нет.
+  status_as_of: null
+- decision_id: identity-522
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '522'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    status: deposit
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 522 (0-based); no pagination
+    finding: 'Исходное название: Dalnee (Dalneye; Almalyk district)'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  - uri: local:data/raw/usgs_sir2010_5090n/sir2010_5090n_gis/Central_Asia_pCu.gdb
+    locator: layer=Central_Asia_deposits_prospects, row=38 (0-based); no pagination
+    finding: 'Донор статуса: Almalyk Group; status_raw=deposit'
+    sha256: 783522e4cd8c3ec2a31ca238735f9f4ff58934b2f4bf0c1faa36599fb97a75af
+  reason: Almalyk Group — группа, Dalnee — отдельный объект; расстояние примерно 1435
+    м и нахождение в районе не доказывают совпадение. Нужен документ состава группы
+    и отдельной стадии Dalnee. Существующее значение сохраняется, подтверждённой правки
+    пока нет.
+  status_as_of: null
+- decision_id: kalmakyr-coordinate
+  record:
+    source: data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    layer: null
+    row: '973'
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  state: pending
+  before:
+    lon: 69.58334
+    lat: 40.66667
+    country: Uzbekistan
+  changes: {}
+  evidence:
+  - uri: local:data/raw/usgs_porphyry_2025/Porphyry_datasheet.csv
+    locator: CSV data row 973 (0-based); LOCATION_REF; no pagination
+    finding: Sinclair (2007) указан источником координат; lon=69.58334, lat=40.66667,
+      declared country Uzbekistan.
+    sha256: eedf7eb3f23fb29db617b4af97482df0574c0adfc5160276dae57aae76aaa550
+  - uri: local:data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7/labels_audit.csv
+    locator: CSV name=Kalmakyr (Almalyk district); no pagination
+    finding: Точка попадает в TJK, заявлена UZB; геометрическая диагностика выявляет
+      конфликт, не правильную координату.
+    sha256: 3d0df52484df94065f4b4a44abf0f5f8136433ef56250ca7ba27916ed2d44050
+  - uri: https://www.researchgate.net/profile/W-Sinclair/publication/228668686_Porphyry_deposits/links/5dddd0ce4585159aa44b92ed/Porphyry-deposits.pdf
+    locator: Sinclair 2007, pp. 223–243; p.224 Figure 1, reference to Appendix 2 (World)
+    finding: Авторская статья показывает Kal’makyr на мировой обзорной карте и отсылает
+      к приложению. Из карты нельзя получить проверенную точную координату отдельного
+      карьера.
+    sha256: null
+  reason: Первичная ссылка установлена, но точная табличная координата отдельного
+    Kalmakyr из Appendix 2 не проверена. Координату Almalyk Group переносить нельзя.
+    Сохранить исходную точку и заявленную страну.
+  status_as_of: null

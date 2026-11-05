@@ -1,0 +1,4 @@
+-c py310-geo.txt
+scikit-learn==1.7.2
+joblib==1.6.0
+threadpoolctl==3.7.0

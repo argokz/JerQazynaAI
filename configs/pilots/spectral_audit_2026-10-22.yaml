@@ -1,0 +1,5 @@
+assessment_id: spectral_audit_2026-10-22
+pilot: configs/pilots/emit_train_2026-10-20.yaml
+country_audit: data/diagnostics/porphyry_cu_balkhash/countries/7979210524e544a7
+minimum_positive_per_fold: 5
+minimum_blocks_per_fold: 2

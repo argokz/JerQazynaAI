@@ -6,6 +6,7 @@ from jerqazyna.validation.metrics import (
     capture_at,
     capture_at_matched_area,
     detection_curve,
+    estimate_capture,
 )
 from jerqazyna.validation.splits import blind_region_split, spatial_block_folds, spatial_blocks
 
@@ -16,6 +17,7 @@ __all__ = [
     "capture_at",
     "capture_at_matched_area",
     "detection_curve",
+    "estimate_capture",
     "spatial_block_folds",
     "spatial_blocks",
 ]

@@ -1,0 +1,26 @@
+# Зафиксировано после аудита геометрии и до новых fit. Слепой тест закрыт.
+study_id: porphyry_cu_country_pu
+country_names:
+  CHN: China
+  KAZ: Kazakhstan
+  KGZ: Kyrgyzstan
+  RUS: Russia
+  TJK: Tajikistan
+  UZB: Uzbekistan
+variants:
+  - name: baseline_area
+    sampling: area
+    seeds: [42, 137]
+    trees_per_member: 500
+  - name: country_equal
+    sampling: country_equal
+    seeds: [42, 137]
+    trees_per_member: 500
+  - name: pu_bagging_area
+    sampling: area
+    seeds: [42, 137, 251, 509, 997]
+    trees_per_member: 200
+  - name: pu_bagging_country
+    sampling: country_equal
+    seeds: [42, 137, 251, 509, 997]
+    trees_per_member: 200

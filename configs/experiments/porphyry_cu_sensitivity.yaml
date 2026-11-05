@@ -1,0 +1,28 @@
+# Ограниченная диагностическая серия; не подбирает финальную модель и не открывает тест.
+study_id: porphyry_cu_sensitivity
+model: random_forest
+variants:
+  - name: baseline_50km
+    block_size_m: 50000
+    layers: [dem, magnetics, gravity, lithology]
+    positive_statuses: [deposit, prospect]
+  - name: blocks_25km
+    block_size_m: 25000
+    layers: [dem, magnetics, gravity, lithology]
+    positive_statuses: [deposit, prospect]
+  - name: blocks_100km
+    block_size_m: 100000
+    layers: [dem, magnetics, gravity, lithology]
+    positive_statuses: [deposit, prospect]
+  - name: without_geophysics
+    block_size_m: 50000
+    layers: [dem, lithology]
+    positive_statuses: [deposit, prospect]
+  - name: without_lithology
+    block_size_m: 50000
+    layers: [dem, magnetics, gravity]
+    positive_statuses: [deposit, prospect]
+  - name: deposit_only
+    block_size_m: 50000
+    layers: [dem, magnetics, gravity, lithology]
+    positive_statuses: [deposit]

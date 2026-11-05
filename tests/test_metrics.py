@@ -6,6 +6,7 @@ from jerqazyna.validation import (
     capture_at,
     capture_at_matched_area,
     detection_curve,
+    estimate_capture,
 )
 
 
@@ -60,9 +61,55 @@ def test_matched_area_comparison():
     area, bench_cap, model_cap = capture_at_matched_area(scores, deposits, benchmark)
     assert area == 0.5
     assert bench_cap == 1.0
-    assert model_cap == 1.0
+    assert model_cap == pytest.approx((2 + 2 * 48 / 98) / 4)
 
 
 def test_empty_deposits_raise():
     with pytest.raises(ValueError):
         capture_at(np.zeros(10), np.array([], dtype=int), 0.2)
+
+
+def test_ties_are_independent_of_cell_order_and_match_curve():
+    scores = np.zeros(100)
+    for cells in (np.arange(20), np.arange(80, 100)):
+        assert capture_at(scores, cells, .2) == pytest.approx(.2)
+        area, capture = detection_curve(scores, cells)
+        assert np.interp(.2, area, capture) == pytest.approx(.2)
+
+
+def test_mixed_ties_match_interpolated_curve():
+    scores = np.array([3, 3, 2, 2, 2, 1, 0])
+    cells = np.array([0, 2, 4, 6])
+    area, curve = detection_curve(scores, cells)
+    for fraction in np.linspace(0, 1, 31):
+        assert capture_at(scores, cells, fraction) == pytest.approx(np.interp(fraction, area, curve))
+
+
+@pytest.mark.parametrize("function", [estimate_capture, bootstrap_capture])
+def test_one_success_does_not_prove_success_criterion(function):
+    est = function(np.array([1., 0, 0, 0, 0]), np.array([0]), .2)
+    assert est.capture == 1
+    assert est.lower == pytest.approx(.025)
+    assert not est.passes(.7)
+
+
+def test_tie_interval_includes_assignment_uncertainty():
+    est = estimate_capture(np.zeros(100), np.arange(20), .2)
+    assert est.capture == pytest.approx(.2)
+    assert est.expected_hits == pytest.approx(4)
+    assert est.lower == 0 and est.upper == 1
+
+
+@pytest.mark.parametrize("scores,cells,fraction", [
+    ([1, np.nan], [0], .2), ([np.inf], [0], .2), ([], [0], .2),
+    ([1, 0], [-1], .2), ([1, 0], [2], .2), ([1, 0], [0.5], .2),
+    ([1, 0], [0], -1), ([1, 0], [0], 1.1), ([1, 0], [0], np.nan),
+])
+def test_invalid_evaluation_inputs_raise(scores, cells, fraction):
+    with pytest.raises(ValueError):
+        capture_at(np.array(scores), np.array(cells), fraction)
+
+
+def test_incompatible_benchmark_mask_raises():
+    with pytest.raises(ValueError):
+        capture_at_matched_area(np.ones(3), np.array([0]), np.array([True]))

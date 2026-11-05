@@ -1,0 +1,20 @@
+# Фиксированный стартовый протокол. Тест Прибалхашья не используется для выбора модели.
+experiment_id: porphyry_cu_baseline
+layers: [dem, magnetics, gravity, lithology]
+positive_statuses: [deposit, prospect]
+min_valid_fraction: 0.5
+n_folds: 5
+cv_buffer_m: 10000
+background_cells: 50000
+background_seeds: [42, 137]
+background_exclusion_m: 5000
+models: [logistic, random_forest]
+forest:
+  n_estimators: 500
+  max_depth: 12
+  min_samples_leaf: 5
+logistic_c: 1.0
+workers: 2
+batch_size: 65536
+heuristic_band: lithology__distance_km
+grouped_bootstrap_iterations: 2000
