@@ -291,7 +291,20 @@ def main(argv: list[str] | None = None) -> int:
     spectral.add_argument("protocol")
     spectral.add_argument("--root", default=".")
 
+    blind = sub.add_parser("blind-test", help="однократный слепой тест по предрегистрированному протоколу")
+    blind.add_argument("protocol")
+    blind.add_argument("--root", default=".")
+
     args = parser.parse_args(argv)
+    if args.command == "blind-test":
+        try:
+            from jerqazyna.validation.blind import run_blind_test
+
+            print(run_blind_test(args.protocol, Path(args.root)))
+            return 0
+        except (ImportError, OSError, ValueError, KeyError) as exc:
+            print(f"ОШИБКА: {exc}", file=sys.stderr)
+            return 1
     if args.command == "spectral-audit":
         try:
             from jerqazyna.validation.spectral_audit import audit, load_audit
